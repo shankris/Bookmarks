@@ -1,0 +1,56 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15vh;
+  z-index: 999;
+}
+
+.palette {
+  width: 600px;
+  background: var(--bg, #111);
+  color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+.input {
+  width: 100%;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  outline: none;
+  background: #1b1b1b;
+  color: white;
+}
+
+.list {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.item {
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.item:hover,
+.active {
+  background: #2a2a2a;
+}
+
+.kbd {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.empty {
+  padding: 16px;
+  opacity: 0.5;
+}

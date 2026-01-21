@@ -1,0 +1,167 @@
+/* ================================
+   Tables – Base
+================================ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  background-color: var(--surfaceColor);
+  color: var(--txtColor);
+}
+
+/* ================================
+   Table Sections
+================================ */
+
+thead {
+  background-color: var(--tableHeaderBg);
+  vertical-align: bottom;
+}
+
+tbody {
+  vertical-align: middle;
+}
+
+tfoot {
+  vertical-align: top;
+}
+
+/* ================================
+   Cells
+================================ */
+
+th,
+td {
+  padding: 0.5em 0.75em;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--borderColor);
+}
+
+/* ================================
+   Headers
+================================ */
+
+th {
+  font-weight: 600;
+  color: var(--headingCol);
+  white-space: nowrap;
+}
+
+/* ================================
+   Body Rows
+================================ */
+
+tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+.table--striped tbody tr:nth-child(even) {
+  background-color: var(--rowAltBg);
+}
+
+tbody tr:hover {
+  background-color: var(--tableHoverBg);
+}
+
+/* ================================
+   Footer
+================================ */
+
+tfoot td {
+  font-weight: 500;
+  border-top: 1px solid var(--borderColor);
+}
+
+/* ================================
+   Caption
+================================ */
+
+caption {
+  caption-side: bottom;
+  padding-block: 0.5em;
+  font-size: 0.875em;
+  color: var(--mutedColor);
+  text-align: left;
+}
+
+/* ================================
+   Alignment Helpers
+================================ */
+
+.td--num,
+.th--num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.td--center,
+.th--center {
+  text-align: center;
+}
+
+/* ================================
+   Variants
+================================ */
+
+.table--compact th,
+.table--compact td {
+  padding: 0.35em 0.5em;
+  font-size: 0.875rem;
+}
+
+.table--bordered {
+  border: 1px solid var(--borderColor);
+  border-radius: var(--borderRadius-md);
+  overflow: hidden;
+}
+
+/* ================================
+   Responsive Wrapper
+================================ */
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-wrap table {
+  min-width: 600px;
+}
+
+/* ================================
+   Dark Mode Tweaks
+================================ */
+
+html[data-theme="dark"] table {
+  background-color: var(--surfaceColor);
+}
+
+/* Improve contrast between header and body */
+html[data-theme="dark"] thead {
+  background-color: var(--tableHeaderBg);
+}
+
+/* Softer row hover for dark surfaces */
+html[data-theme="dark"] tbody tr:hover {
+  background-color: var(--tableHoverBg);
+}
+
+/* Ensure striped rows remain visible in dark mode */
+html[data-theme="dark"] .table--striped tbody tr:nth-child(even) {
+  background-color: var(--rowAltBg);
+}
+
+/* Footer separation without harsh borders */
+html[data-theme="dark"] tfoot td {
+  border-top-color: var(--borderColor);
+}
+
+/* Slightly brighter caption for readability */
+html[data-theme="dark"] caption {
+  color: var(--mutedColor);
+}

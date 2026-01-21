@@ -1,0 +1,32 @@
+/* ==============================
+   Theme toggle ripple
+============================== */
+
+/* Animate only the new view */
+::view-transition-new(root) {
+  animation-name: theme-reveal;
+  animation-duration: 1s;
+  /* slow ripple */
+  animation-timing-function: ease-in-out;
+}
+
+/* Disable animation for the old view */
+::view-transition-old(root) {
+  animation: none;
+}
+
+/* Ripple animation */
+@keyframes theme-reveal {
+  from {
+    clip-path: circle(0% at var(--vt-x) var(--vt-y));
+  }
+
+  to {
+    clip-path: circle(150% at var(--vt-x) var(--vt-y));
+  }
+}
+
+/* Fallback for unsupported browsers */
+html[data-theme] {
+  transition: background-color 1s ease, color 1s ease;
+}

@@ -1,0 +1,32 @@
+.toggleBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.toggleBtn:hover {
+  background-color: var(--rowAltBg);
+  transform: scale(1.1);
+}
+
+/* Show/hide icons based on theme */
+.active {
+  display: inline;
+  color: var(--accentColor);
+}
+
+.inactive {
+  display: none;
+}
+
+/* Optional: add smooth transition for color change */
+.toggleBtn svg {
+  transition: color 0.3s ease;
+}

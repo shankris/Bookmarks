@@ -1,0 +1,49 @@
+/* search.theme.css */
+
+/* --------------------------
+   Light theme (default)
+-------------------------- */
+:root {
+  --search-bg-primary: #ffffff;
+  --search-bg-secondary: #f4f4f5;
+  --search-bg-hover: #f4f4f5;
+
+  --search-border-default: #e4e4e7;
+  --search-border-focus: #6366f1;
+
+  --search-text-primary: #18181b;
+  --search-text-secondary: #71717a;
+  --search-text-muted: #a1a1aa;
+  --search-text-inverse: #ffffff;
+
+  --search-accent-primary: #6366f1;
+  --search-accent-hover: #4f46e5;
+
+  --search-focus-ring: rgba(99, 102, 241, 0.15);
+
+  --search-shadow-dropdown: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* --------------------------
+   Dark theme
+-------------------------- */
+html[data-theme="dark"] {
+  --search-bg-primary: #09090b;
+  --search-bg-secondary: #18181b;
+  --search-bg-hover: #27272a;
+
+  --search-border-default: #27272a;
+  --search-border-focus: #818cf8;
+
+  --search-text-primary: #fafafa;
+  --search-text-secondary: #a1a1aa;
+  --search-text-muted: #71717a;
+  --search-text-inverse: #09090b;
+
+  --search-accent-primary: #818cf8;
+  --search-accent-hover: #6366f1;
+
+  --search-focus-ring: rgba(129, 140, 248, 0.25);
+
+  --search-shadow-dropdown: 0 10px 30px rgba(0, 0, 0, 0.6);
+}

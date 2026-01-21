@@ -1,0 +1,133 @@
+/* ================================
+   Design Tokens – Light Mode
+================================ */
+
+:root {
+
+  color-scheme: light;
+
+  --headerHeight: 50px;
+  --footerHeight: 50px;
+
+  --contentWidth: 1900px;
+  --contentWidthMax: 96%;
+
+  --genericPadding: 10px;
+  --pagePadding: 10px;
+
+  --borderRadius-sm: 4px;
+  --borderRadius-md: 8px;
+  --borderRadius-lg: 12px;
+
+  /*   Motion   */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+
+  --space-xs: 0.25rem;
+  /* 4px */
+  --space-sm: 0.5rem;
+  /* 8px */
+  --space-md: 1rem;
+  /* 16px */
+  --space-lg: 2rem;
+  /* 32px */
+  --space-xl: 3rem;
+  /* 48px */
+
+
+  /* ---------------- Colors: Light Mode ---------------- */
+
+  /* ----- Backgrounds ----- */
+
+  --headerBg: #e1e1e1;
+  --mainContentBg: #f4f6f8;
+  --footerBg: #e1e1e1;
+
+  --bgColor: #f4f6f8;
+  --surfaceColor: #ffffff;
+  --surfaceAlt: #f1f5f9;
+
+
+  /* Text */
+  --txtColor: #1f2933;
+  --mutedColor: #6b7280;
+  --headingCol: #203060;
+
+  /* Borders */
+  --borderColor: #e5e7eb;
+
+  /* Accent */
+  --accentColor: #203060;
+  --hoverColor: #1d4ed8;
+  --focusColor: #2563eb;
+
+
+  /* Tables */
+  --tableHeaderBg: #eef2f7;
+  --rowAltBg: #f9fafb;
+  --tableHoverBg: #eef2ff;
+
+
+  /*   Shadows   */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.08);
+
+
+
+  /* Notification Dropdown */
+  --notificationBg: #d6cece;
+  --notificationTxt: #4f5866;
+  --NotificationHeaderBg: #e7e7e799;
+  --NotificationFooterBg: #e7e7e799;
+
+}
+
+
+
+
+
+/* ================================   Design Tokens – Dark Mode   ================================ */
+
+html[data-theme="dark"] {
+
+  color-scheme: dark;
+
+  /* Backgrounds */
+
+  --headerBg: #243062;
+  --mainContentBg: #222222;
+  --footerBg: #243062;
+
+  --bgColor: #0f172a;
+  --surfaceColor: #020617;
+  --surfaceAlt: #020617;
+
+  /* Text */
+  --txtColor: #e5e7eb;
+  --mutedColor: #9ca3af;
+  --headingCol: #e2e8f0;
+
+  /* Borders */
+  --borderColor: #1e293b;
+
+  /* Accent */
+  --accentColor: #60a5fa;
+  --hoverColor: #93c5fd;
+  --focusColor: #60a5fa;
+
+  /* Tables */
+  --tableHeaderBg: #020617;
+  --rowAltBg: #020617;
+  --tableHoverBg: #020617;
+
+  /*   Shadows   */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 14px rgba(0, 0, 0, 0.5);
+
+
+  /* Notification Dropdown */
+  --notificationItemBg: #13182d;
+  --notificationTxt: #818fa3;
+  --NotificationHeaderBg: #1e2538;
+  --NotificationFooterBg: #1e2538;
+}

@@ -1,0 +1,27 @@
+/* ================================  Body & Base Typography ================================= */
+
+body {
+  font-family: var(--font-open-sans), sans-serif;
+  line-height: 1.6;
+  color: var(--txtColor, #333);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-montserrat), sans-serif;
+  color: var(--headingCol, #203060);
+  font-weight: 300;
+  line-height: 1.2;
+  margin-block: 0.5em;
+}
+
+p {
+  margin-block: 0.75em;
+}
+
+p+p {
+  /* margin-block: 0.5em; */
+}
+
+li {
+  line-height: 1.6;
+}

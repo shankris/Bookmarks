@@ -1,0 +1,27 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--headerHeight);
+  z-index: 1000;
+  background: var(--headerBg);
+  border-bottom: 1px solid var(--borderColor);
+}
+
+.inner {
+  width: var(--contentWidth);
+  max-width: var(--contentWidthMax);
+  padding: var(--genericPadding);
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.rightIcons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}

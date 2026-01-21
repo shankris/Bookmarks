@@ -1,0 +1,41 @@
+.footer {
+  background-color: var(--footerBg);
+  border-top: 1px solid var(--borderColor);
+  color: var(--mutedColor);
+  height: var(--footerHeight, 50px);
+  z-index: 30;
+}
+
+.inner {
+  width: var(--contentWidth);
+  max-width: var(--contentWidthMax);
+
+  margin-inline: auto;
+  /* padding: var(--genericPadding, 1rem); */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.copy {
+  font-size: 0.875rem;
+}
+
+.links {
+  display: flex;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.links a {
+  color: inherit;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.links a:hover {
+  text-decoration: underline;
+}

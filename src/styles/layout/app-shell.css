@@ -1,0 +1,26 @@
+/* ================================
+   App Shell Layout
+================================ */
+
+.app-shell {
+  min-height: 100svh;
+  /* mobile-safe viewport */
+  display: flex;
+  flex-direction: column;
+  background-color: var(--mainContentBg);
+}
+
+/* Main content area */
+.app-main {
+  flex: 1;
+  width: var(--contentWidth);
+  max-width: var(--contentWidthMax);
+  padding: var(--genericPadding, 10px);
+  padding-top: var(--headerHeight);
+  margin-inline: auto;
+}
+
+/* Footer stays at bottom naturally */
+footer {
+  margin-top: auto;
+}

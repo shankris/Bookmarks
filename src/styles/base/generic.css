@@ -1,0 +1,105 @@
+/* ================================
+   Generic element styles
+================================ */
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--headerHeight, 50px);
+}
+
+body {
+  min-height: 100vh;
+  font-size: var(--fontSize, 16px);
+  font-family: var(--fontStack, system-ui, sans-serif);
+  line-height: var(--lineHeight, 1.6);
+  color: var(--txtColor, #333);
+  background-color: var(--bgColor, #f4f4f4);
+}
+
+/* Accessibility */
+:focus-visible {
+  outline: 2px solid var(--accentColor, #0070f3);
+  outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--headingFontWeight, 500);
+  line-height: 1.2;
+  margin-block: 0.75em 0.5em;
+  text-wrap: balance;
+}
+
+p, li, figcaption {
+  max-width: 65ch;
+  text-wrap: pretty;
+}
+
+p {
+  margin-block: 0.75em;
+}
+
+/* Links */
+a {
+  color: var(--accentColor, #0070f3);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:hover,
+a:focus-visible {
+  text-decoration: underline;
+  /* outline: 2px solid var(--accentColor); */
+  /* outline-offset: 2px; */
+}
+
+/* Forms */
+input,
+select,
+button, textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+::placeholder {
+  color: var(--mutedColor, #6b7280);
+}
+
+
+/* ================================
+   Horizontal rule
+================================ */
+
+hr {
+  border: none;
+  border-top: 1px solid var(--borderColor);
+  margin-block: var(--space-lg, 2rem);
+}
+
+
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;
+  }
+
+  *, *::before, *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

@@ -1,0 +1,192 @@
+/* ===============================
+   Sidebar Theme Variables
+================================ */
+
+/* Light theme (default) */
+:root {
+  --sideBar-bg: #f7f8fb;
+  --sideBar-border: #dcdfea;
+
+  --sideBar-header-text: #1a1a1a;
+
+  --sideBar-item-text: #1a1a1a;
+  --sideBar-item-hover-bg: #e9ecf5;
+  --sideBar-item-active-bg: #dfe5f5;
+
+  --sideBar-sub-item-text: #3a3a3a;
+  --sideBar-sub-item-hover-bg: #004fee;
+  --sideBar-sub-item-hover-text: #ffffff;
+  --sideBar-sub-item-active-bg: #0066ff;
+  --sideBar-sub-item-active-text: #ffffff;
+}
+
+/* Dark theme */
+html[data-theme="dark"] {
+  --sideBar-bg: #1d212a;
+  --sideBar-border: #2e303e;
+
+  --sideBar-header-text: #e1ecff;
+
+  --sideBar-item-text: #e1ecff;
+  --sideBar-item-hover-bg: #2e303e;
+  --sideBar-item-active-bg: #383838;
+
+  --sideBar-sub-item-text: #cfd6e4;
+  --sideBar-sub-item-hover-bg: #004fee;
+  --sideBar-sub-item-hover-text: #ffffff;
+  --sideBar-sub-item-active-bg: #0066ff;
+  --sideBar-sub-item-active-text: #ffffff;
+}
+
+.pageSidebar {
+  margin: 0;
+  background: transparent;
+  font-family: inherit;
+}
+
+/* ===============================
+   Sidebar container
+================================ */
+
+.sidebar1 {
+  position: fixed;
+  top: 50px;
+  left: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  width: 200px;
+  height: calc(100vh - 50px);
+
+  background: var(--sideBar-bg);
+  border-right: 1px solid var(--sideBar-border);
+
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+
+  will-change: transform;
+}
+
+.hidden {
+  transform: translateX(-100%);
+}
+
+/* ===============================
+   Header
+================================ */
+
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--sideBar-border);
+  color: var(--sideBar-header-text);
+}
+
+/* ===============================
+   Navigation buttons
+================================ */
+
+.navButton {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  height: 35px;
+  width: 100%;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1;
+  padding: 0 16px;
+  color: var(--sideBar-item-text);
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s;
+}
+
+.navButton span:nth-child(2) {
+  flex: 1 1 auto;
+}
+
+.navButton:hover {
+  background: var(--sideBar-item-hover-bg);
+}
+
+.active {
+  background: var(--sideBar-item-active-bg);
+}
+
+/* ===============================
+   Sub navigation
+================================ */
+
+.subNav {
+  overflow: hidden;
+  transition: height 0.3s ease;
+  padding-left: 40px;
+  font-weight: 300;
+}
+
+.subNavInner {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sub menu item */
+.subNavItem {
+  display: flex;
+  align-items: center;
+  height: 30px;
+  gap: 12px;
+  font-size: 14px;
+  padding: 0 12px;
+  border-radius: 2px;
+  color: var(--sideBar-sub-item-text);
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s;
+}
+
+.subNavItem:hover {
+  background: var(--sideBar-sub-item-hover-bg);
+  color: var(--sideBar-sub-item-hover-text);
+}
+
+.subNavItem.active {
+  background: var(--sideBar-sub-item-active-bg);
+  color: var(--sideBar-sub-item-active-text);
+}
+
+
+.menuBtn {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.edgeToggle {
+  position: fixed;
+  top: 64px;
+  left: 8px;
+
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--sideBar-bg);
+  border: 1px solid var(--sideBar-border);
+  border-radius: 6px;
+
+  cursor: pointer;
+  z-index: 9999;
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
