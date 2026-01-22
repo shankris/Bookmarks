@@ -1,0 +1,88 @@
+/* Light mode variables */
+:root {
+  --bg: #fff;
+  --text: #111;
+  --text-secondary: #555;
+  --border: #ddd;
+  --hover-bg: #f9f9f9;
+  --hover-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --link: #0070f3;
+  --meta: #888;
+}
+
+/* Dark mode variables */
+html[data-theme="dark"] {
+  --bg: #1e1e1e;
+  --text: #fff;
+  --text-secondary: #ccc;
+  --border: #333;
+  --hover-bg: #2a2a2a;
+  --hover-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --link: #4ea1ff;
+  --meta: #aaa;
+}
+
+.card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  background: var(--hover-bg);
+  box-shadow: var(--hover-shadow);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.actions button {
+  margin-left: 8px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--hover-bg);
+  cursor: pointer;
+  color: var(--text);
+}
+
+.actions button:hover {
+  background: var(--hover-bg);
+}
+
+.url {
+  display: block;
+  color: var(--link);
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  text-decoration: none;
+}
+
+.url:hover {
+  text-decoration: underline;
+}
+
+.notes {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.meta span {
+  font-size: 0.8rem;
+  color: var(--meta);
+  margin-right: 8px;
+}

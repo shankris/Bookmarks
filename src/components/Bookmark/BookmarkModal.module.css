@@ -1,0 +1,46 @@
+/* Light mode */
+:root {
+  --modal-bg: #ffffff;
+  --overlay-bg: rgba(0, 0, 0, 0.45);
+  --modal-border: #ddd;
+  --close: #666;
+}
+
+/* Dark mode */
+html[data-theme="dark"] {
+  --modal-bg: #1f1f1f;
+  --overlay-bg: rgba(0, 0, 0, 0.7);
+  --modal-border: #333;
+  --close: #aaa;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--modal-bg);
+  border: 1px solid var(--modal-border);
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 520px;
+  position: relative;
+}
+
+.close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-size: 22px;
+  background: none;
+  border: none;
+  color: var(--close);
+  cursor: pointer;
+}
