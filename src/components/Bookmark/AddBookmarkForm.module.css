@@ -1,0 +1,227 @@
+/* ---------- LIGHT MODE VARIABLES ---------- */
+:root {
+  --radio-bg: #f5f5f5;
+  --radio-hover-bg: #ececec;
+  --radio-border: #d0d0d0;
+  --radio-text: #333;
+
+  --radio-active-bg: #2563eb;
+  --radio-active-border: #2563eb;
+  --radio-active-text: #ffffff;
+
+  --star-active: #f59e0b;
+  --star-inactive: #d1d5db;
+
+  /* Tags */
+  --tag-bg: #e5e7eb;
+  --tag-text: #111;
+  --tag-remove: #6b7280;
+
+  /* Inputs */
+  --input-bg: #fff;
+  --input-border: #d0d0d0;
+  --text: #333;
+  --primary: #2563eb;
+}
+
+/* ---------- DARK MODE VARIABLES ---------- */
+html[data-theme="dark"] {
+  --radio-bg: #2a2a2a;
+  --radio-hover-bg: #333;
+  --radio-border: #444;
+  --radio-text: #ddd;
+
+  --radio-active-bg: #3b82f6;
+  --radio-active-border: #3b82f6;
+  --radio-active-text: #ffffff;
+
+  --star-active: #fbbf24;
+  --star-inactive: #4b5563;
+
+  /* Tags */
+  --tag-bg: #374151;
+  --tag-text: #e5e7eb;
+  --tag-remove: #9ca3af;
+
+  /* Inputs */
+  --input-bg: #1f1f1f;
+  --input-border: #444;
+  --text: #ddd;
+  --primary: #3b82f6;
+}
+
+/* ---------- GENERAL FORM STYLES ---------- */
+.row label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.heading {
+  font-weight: 300;
+  margin-bottom: 20px;
+  font-size: 26px;
+}
+
+.heading svg {
+  display: inline-block;
+}
+
+.txtBox {
+  width: 100%;
+  max-width: 500px;
+  padding: 8px 10px;
+  background: var(--input-bg);
+  color: var(--text);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  font-size: 14px;
+  margin: 0 0 8px 0;
+}
+
+.addBtn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  margin: 16px 0 0;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.addBtn:hover {
+  opacity: 0.9;
+}
+
+/* ---------- TAGS INPUT ---------- */
+.tagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 500px;
+  padding: 6px;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  background: var(--input-bg);
+}
+
+.tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.tag button {
+  background: none;
+  border: none;
+  color: var(--tag-remove);
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.tagsInput {
+  flex: 1;
+  min-width: 120px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+}
+
+/* ---------- RADIO GROUP ---------- */
+.radioGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 500px;
+}
+
+.radioGroup input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.radioGroup label {
+  flex: 0 0 calc(33.333% - 6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+  height: 36px;
+  padding: 0 8px;
+
+  border-radius: 3px;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+
+  background: var(--radio-bg);
+  border: 1px solid var(--radio-border);
+  color: var(--radio-text);
+
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+.radioGroup label:hover {
+  background: var(--radio-hover-bg);
+}
+
+.radioGroup label:has(input[type="radio"]:checked) {
+  background: var(--radio-active-bg);
+  border-color: var(--radio-active-border);
+  color: var(--radio-active-text);
+}
+
+/* ---------- CATEGORY / SUB-CATEGORY CARDS ---------- */
+.cardGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.card {
+  padding: 6px 14px;
+  border: 1px solid var(--radio-border);
+  border-radius: 6px;
+  background: var(--radio-bg);
+  color: var(--radio-text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 14px;
+  min-width: 60px;
+  text-align: center;
+}
+
+.card:hover {
+  background: var(--radio-hover-bg);
+}
+
+.activeCard {
+  background: var(--radio-active-bg);
+  color: var(--radio-active-text);
+  border-color: var(--radio-active-border);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
+  /* subtle highlight */
+}
+
+/* ---------- SUB-CATEGORY PLACEHOLDER ---------- */
+.placeholder {
+  color: #9ca3af;
+  font-style: italic;
+  padding: 8px;
+  font-size: 14px;
+}

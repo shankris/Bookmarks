@@ -2,40 +2,33 @@
 
 import { flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
 import { useMemo, useState, useEffect } from "react";
+import { Plus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+
+import BookmarkModal from "./BookmarkModal";
+import AddBookmarkForm from "./AddBookmarkForm";
+
 import styles from "./BookmarkList.module.css";
 
 export default function BookmarkList({ initialBookmarks = [] }) {
   const [sorting, setSorting] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [bookmarks, setBookmarks] = useState(initialBookmarks);
 
-  // Real-time last visit update
+  /* ---------- real-time "Last visit" refresh ---------- */
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(new Date());
-    }, 60000); // every 1 minute
+    }, 60000); // every minute
+
     return () => clearInterval(interval);
   }, []);
 
-  // Handle visiting a link
-  async function handleVisit(bookmark, e) {
-    e.stopPropagation();
+  /* ---------- helpers ---------- */
 
-    await supabase
-      .from("bookmarks")
-      .update({
-        last_visit: new Date().toISOString(),
-        total_visits: (bookmark.total_visits || 0) + 1,
-      })
-      .eq("id", bookmark.id);
-
-    window.open(bookmark.url, "_blank", "noopener,noreferrer");
-  }
-
-  // Helpers
   function formatUrlForDisplay(url) {
-    if (!url) return "";
-    return url.replace(/^https?:\/\//, "");
+    return url ? url.replace(/^https?:\/\//, "") : "";
   }
 
   function formatDate(dateStr) {
@@ -50,10 +43,7 @@ export default function BookmarkList({ initialBookmarks = [] }) {
   function formatLastVisit(value) {
     if (!value) return "—";
 
-    const now = currentTime;
-    const then = new Date(value);
-    const diffMs = now - then;
-
+    const diffMs = currentTime - new Date(value);
     const minutes = Math.floor(diffMs / (1000 * 60));
     const hours = Math.floor(diffMs / (1000 * 60 * 60));
     const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -68,7 +58,46 @@ export default function BookmarkList({ initialBookmarks = [] }) {
     return `${years} year${years > 1 ? "s" : ""} ago`;
   }
 
-  // Columns
+  /* ---------- visit handler ---------- */
+
+  async function handleVisit(bookmark, e) {
+    e.stopPropagation();
+
+    await supabase
+      .from("bookmarks")
+      .update({
+        last_visit: new Date().toISOString(),
+        total_visits: (bookmark.total_visits || 0) + 1,
+      })
+      .eq("id", bookmark.id);
+
+    window.open(bookmark.url, "_blank", "noopener,noreferrer");
+  }
+
+  /* ---------- add bookmark ---------- */
+
+  async function handleAddBookmark(formData) {
+    const { data, error } = await supabase
+      .from("bookmarks")
+      .insert({
+        ...formData,
+        saved_on: new Date().toISOString(),
+        total_visits: 0,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Failed to add bookmark:", error);
+      return;
+    }
+
+    setBookmarks((prev) => [data, ...prev]);
+    setIsModalOpen(false);
+  }
+
+  /* ---------- table columns ---------- */
+
   const columns = useMemo(
     () => [
       {
@@ -77,19 +106,19 @@ export default function BookmarkList({ initialBookmarks = [] }) {
         cell: ({ row }) => {
           const bookmark = row.original;
           const domain = bookmark.url ? bookmark.url.replace(/^https?:\/\//, "").split("/")[0] : "";
-          const faviconUrl = `https://www.google.com/s2/favicons?sz=32&domain_url=${domain}`;
+          const faviconUrl = domain ? `https://www.google.com/s2/favicons?sz=32&domain_url=${domain}` : null;
 
           return (
-            <span style={{ display: "flex", alignItems: "center" }}>
-              {domain && (
+            <div className={styles.titleCell}>
+              {faviconUrl && (
                 <img
                   src={faviconUrl}
                   alt=''
-                  style={{ width: 24, height: 24, marginRight: 6 }}
+                  className={styles.favicon}
                 />
               )}
               {bookmark.title}
-            </span>
+            </div>
           );
         },
       },
@@ -98,14 +127,13 @@ export default function BookmarkList({ initialBookmarks = [] }) {
         header: "URL",
         cell: ({ row }) => {
           const bookmark = row.original;
-          const displayUrl = formatUrlForDisplay(bookmark.url);
           return (
             <button
               className={styles.link}
               onClick={(e) => handleVisit(bookmark, e)}
               title={bookmark.url}
             >
-              {displayUrl}
+              {formatUrlForDisplay(bookmark.url)}
             </button>
           );
         },
@@ -121,7 +149,6 @@ export default function BookmarkList({ initialBookmarks = [] }) {
       {
         accessorKey: "priority",
         header: "Priority",
-        cell: (info) => info.getValue(),
         meta: { className: styles.numericCell },
       },
       {
@@ -145,7 +172,7 @@ export default function BookmarkList({ initialBookmarks = [] }) {
   );
 
   const table = useReactTable({
-    data: initialBookmarks,
+    data: bookmarks,
     columns,
     state: { sorting },
     onSortingChange: setSorting,
@@ -153,58 +180,85 @@ export default function BookmarkList({ initialBookmarks = [] }) {
     getSortedRowModel: getSortedRowModel(),
   });
 
-  return (
-    <div className={styles.tableWrapper}>
-      <table className={styles.table}>
-        <thead>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <th
-                  key={header.id}
-                  onClick={header.column.getToggleSortingHandler()}
-                  className={`${styles.th} ${header.column.columnDef.meta?.className || ""}`}
-                >
-                  {flexRender(header.column.columnDef.header, header.getContext())}
-                  {{
-                    asc: " ▲",
-                    desc: " ▼",
-                  }[header.column.getIsSorted()] ?? null}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
+  /* ---------- render ---------- */
 
-        <tbody>
-          {table.getRowModel().rows.length === 0 ? (
-            <tr>
-              <td
-                colSpan={columns.length}
-                className={styles.empty}
-              >
-                No bookmarks found
-              </td>
-            </tr>
-          ) : (
-            table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className={styles.tr}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td
-                    key={cell.id}
-                    className={`${styles.td} ${cell.column.columnDef.meta?.className || ""}`}
+  return (
+    <>
+      {/* Header */}
+      <div className={styles.header}>
+        <button
+          className={styles.addButton}
+          onClick={() => setIsModalOpen(true)}
+        >
+          <Plus size={16} />
+          Add
+        </button>
+      </div>
+
+      {/* Table */}
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <th
+                    key={header.id}
+                    onClick={header.column.getToggleSortingHandler()}
+                    className={`${styles.th} ${header.column.columnDef.meta?.className || ""}`}
                   >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                    {{
+                      asc: " ▲",
+                      desc: " ▼",
+                    }[header.column.getIsSorted()] ?? null}
+                  </th>
                 ))}
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+            ))}
+          </thead>
+
+          <tbody>
+            {table.getRowModel().rows.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={columns.length}
+                  className={styles.empty}
+                >
+                  No bookmarks found
+                </td>
+              </tr>
+            ) : (
+              table.getRowModel().rows.map((row) => (
+                <tr
+                  key={row.id}
+                  className={styles.tr}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <td
+                      key={cell.id}
+                      className={`${styles.td} ${cell.column.columnDef.meta?.className || ""}`}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Modal */}
+      <BookmarkModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      >
+        <AddBookmarkForm
+          onSubmit={handleAddBookmark}
+          onCancel={() => setIsModalOpen(false)}
+        />
+      </BookmarkModal>
+    </>
   );
 }
