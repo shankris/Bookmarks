@@ -2,7 +2,7 @@
 
 import { flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
 import { useMemo, useState, useEffect } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Star } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 import BookmarkModal from "./BookmarkModal";
@@ -16,29 +16,16 @@ export default function BookmarkList({ initialBookmarks = [] }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bookmarks, setBookmarks] = useState(initialBookmarks);
 
-  /* ---------- real-time "Last visit" refresh ---------- */
+  /* ---------- live "Last visit" refresh ---------- */
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(new Date());
-    }, 60000); // every minute
+    }, 60000);
 
     return () => clearInterval(interval);
   }, []);
 
   /* ---------- helpers ---------- */
-
-  function formatUrlForDisplay(url) {
-    return url ? url.replace(/^https?:\/\//, "") : "";
-  }
-
-  function formatDate(dateStr) {
-    if (!dateStr) return "-";
-    return new Date(dateStr).toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  }
 
   function formatLastVisit(value) {
     if (!value) return "—";
@@ -58,42 +45,60 @@ export default function BookmarkList({ initialBookmarks = [] }) {
     return `${years} year${years > 1 ? "s" : ""} ago`;
   }
 
+  function formatNextVisitIn(nextVisitAt) {
+    if (!nextVisitAt) return "—";
+
+    const now = new Date();
+    const target = new Date(nextVisitAt);
+
+    const diffMs = target - now;
+    if (diffMs <= 0) return "Due";
+
+    const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    if (days < 30) return `${days}d`;
+
+    return `${Math.ceil(days / 30)}m`;
+  }
+
   /* ---------- visit handler ---------- */
 
   async function handleVisit(bookmark, e) {
+    e.preventDefault();
     e.stopPropagation();
 
-    await supabase
+    const now = new Date();
+    const nextVisit = new Date(now.getTime() + bookmark.revisit_cycle_days * 24 * 60 * 60 * 1000);
+
+    // 1️⃣ Optimistic UI update
+    setBookmarks((prev) =>
+      prev.map((b) =>
+        b.id === bookmark.id
+          ? {
+              ...b,
+              last_visit: now.toISOString(),
+              total_visits: (b.total_visits || 0) + 1,
+              next_visit_at: nextVisit.toISOString(),
+            }
+          : b,
+      ),
+    );
+
+    // 2️⃣ Background DB update
+    supabase
       .from("bookmarks")
       .update({
-        last_visit: new Date().toISOString(),
+        last_visit: now.toISOString(),
         total_visits: (bookmark.total_visits || 0) + 1,
+        next_visit_at: nextVisit.toISOString(),
       })
-      .eq("id", bookmark.id);
+      .eq("id", bookmark.id)
+      .then(({ error }) => {
+        if (error) console.error("Supabase sync failed", error);
+      });
 
+    // 3️⃣ Navigate
     window.open(bookmark.url, "_blank", "noopener,noreferrer");
-  }
-
-  /* ---------- add bookmark ---------- */
-
-  async function handleAddBookmark(formData) {
-    const { data, error } = await supabase
-      .from("bookmarks")
-      .insert({
-        ...formData,
-        saved_on: new Date().toISOString(),
-        total_visits: 0,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Failed to add bookmark:", error);
-      return;
-    }
-
-    setBookmarks((prev) => [data, ...prev]);
-    setIsModalOpen(false);
   }
 
   /* ---------- table columns ---------- */
@@ -102,14 +107,21 @@ export default function BookmarkList({ initialBookmarks = [] }) {
     () => [
       {
         accessorKey: "title",
-        header: "Title",
+        header: "Website",
         cell: ({ row }) => {
           const bookmark = row.original;
-          const domain = bookmark.url ? bookmark.url.replace(/^https?:\/\//, "").split("/")[0] : "";
-          const faviconUrl = domain ? `https://www.google.com/s2/favicons?sz=32&domain_url=${domain}` : null;
+          const domain = bookmark.url?.replace(/^https?:\/\//, "").replace(/\/$/, "");
+
+          const faviconUrl = domain ? `https://www.google.com/s2/favicons?sz=64&domain_url=${domain}` : null;
 
           return (
-            <div className={styles.titleCell}>
+            <a
+              href={bookmark.url}
+              target='_blank'
+              rel='noopener noreferrer'
+              className={styles.websiteCell}
+              onClick={(e) => handleVisit(bookmark, e)}
+            >
               {faviconUrl && (
                 <img
                   src={faviconUrl}
@@ -117,24 +129,12 @@ export default function BookmarkList({ initialBookmarks = [] }) {
                   className={styles.favicon}
                 />
               )}
-              {bookmark.title}
-            </div>
-          );
-        },
-      },
-      {
-        accessorKey: "url",
-        header: "URL",
-        cell: ({ row }) => {
-          const bookmark = row.original;
-          return (
-            <button
-              className={styles.link}
-              onClick={(e) => handleVisit(bookmark, e)}
-              title={bookmark.url}
-            >
-              {formatUrlForDisplay(bookmark.url)}
-            </button>
+
+              <div className={styles.websiteText}>
+                <div className={styles.title}>{bookmark.title}</div>
+                <div className={styles.url}>{domain}</div>
+              </div>
+            </a>
           );
         },
       },
@@ -148,24 +148,57 @@ export default function BookmarkList({ initialBookmarks = [] }) {
       },
       {
         accessorKey: "priority",
-        header: "Priority",
+        header: "Rating",
+        cell: ({ getValue }) => {
+          const rating = getValue() || 0;
+
+          return (
+            <div className={styles.stars}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  size={22}
+                  className={i < rating ? styles.starFilled : styles.starEmpty}
+                  fill={i < rating ? "currentColor" : "none"}
+                />
+              ))}
+            </div>
+          );
+        },
         meta: { className: styles.numericCell },
       },
       {
         accessorKey: "total_visits",
         header: "Visits",
-        cell: (info) => info.getValue() ?? 0,
         meta: { className: styles.numericCell },
-      },
-      {
-        accessorKey: "saved_on",
-        header: "Saved On",
-        cell: (info) => formatDate(info.getValue()),
       },
       {
         accessorKey: "last_visit",
         header: "Last Visit",
         cell: (info) => formatLastVisit(info.getValue()),
+      },
+      {
+        accessorKey: "next_visit_at",
+        header: "Revisit in",
+        cell: ({ getValue }) => {
+          const nextVisit = getValue();
+          if (!nextVisit) return "—";
+
+          const today = new Date();
+          const target = new Date(nextVisit);
+
+          // Normalize both to start of day
+          today.setHours(0, 0, 0, 0);
+          target.setHours(0, 0, 0, 0);
+
+          const diffDays = Math.round((target - today) / (1000 * 60 * 60 * 24));
+
+          if (diffDays <= 0) return "Due";
+          if (diffDays < 30) return `${diffDays}d`;
+
+          return `${Math.ceil(diffDays / 30)}m`;
+        },
+        meta: { className: styles.numericCell },
       },
     ],
     [currentTime],
@@ -184,24 +217,24 @@ export default function BookmarkList({ initialBookmarks = [] }) {
 
   return (
     <>
-      {/* Header */}
       <div className={styles.header}>
+        <h1 className={styles.heading}>Bookmarks</h1>
+
         <button
           className={styles.addButton}
           onClick={() => setIsModalOpen(true)}
         >
           <Plus size={16} />
-          Add
+          Add Bookmark
         </button>
       </div>
 
-      {/* Table */}
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+            {table.getHeaderGroups().map((hg) => (
+              <tr key={hg.id}>
+                {hg.headers.map((header) => (
                   <th
                     key={header.id}
                     onClick={header.column.getToggleSortingHandler()}
@@ -249,15 +282,11 @@ export default function BookmarkList({ initialBookmarks = [] }) {
         </table>
       </div>
 
-      {/* Modal */}
       <BookmarkModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       >
-        <AddBookmarkForm
-          onSubmit={handleAddBookmark}
-          onCancel={() => setIsModalOpen(false)}
-        />
+        <AddBookmarkForm />
       </BookmarkModal>
     </>
   );

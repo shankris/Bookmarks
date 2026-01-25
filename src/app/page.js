@@ -7,7 +7,6 @@ export default async function Home() {
 
   return (
     <div className={styles.page}>
-      <h1>Bookmarks</h1>
       <BookmarkList initialBookmarks={bookmarks} />
     </div>
   );
