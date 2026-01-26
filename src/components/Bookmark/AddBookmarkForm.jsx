@@ -6,27 +6,24 @@ import StarRating from "./StarRating";
 import TagsInput from "./TagsInput";
 import { supabase } from "@/lib/supabase";
 import styles from "./AddBookmarkForm.module.css";
+import { CATEGORY_MAP } from "@/components/common/categories";
 
-/* ---------- Static category data ---------- */
-const CATEGORY_MAP = {
-  Dev: ["Frontend", "Backend", "DevOps"],
-  Design: ["UI", "UX", "Illustration"],
-  Finance: ["Investing", "Trading", "Tax"],
-  Learning: ["Courses", "Docs", "Tutorials"],
-  News: ["Tech", "World", "Local"],
-  Sports: ["Cricket", "Tennis"],
-  Writing: ["Blogs", "Articles", "Stories"],
-};
-
-export default function AddBookmarkForm() {
+export default function AddBookmarkForm({ onClose }) {
   const [priority, setPriority] = useState(3);
   const [category, setCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(false);
   const [revisitEvery, setRevisitEvery] = useState("1w");
+  const [urlPreview, setUrlPreview] = useState("");
+  const [status, setStatus] = useState("idle"); // idle | saving | success | error
 
-  /* Convert revisit cycle to days */
+  function truncateUrl(url, maxLength = 43) {
+    if (!url) return "";
+    if (url.length <= maxLength) return url;
+    return url.slice(0, maxLength - 1) + "…";
+  }
+
   function parseRevisit(revisit) {
     switch (revisit) {
       case "1d":
@@ -48,44 +45,107 @@ export default function AddBookmarkForm() {
     }
   }
 
-  /* Submit directly to Supabase */
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const revisit = formData.get("revisit_every");
-
-    const payload = {
-      title: formData.get("title"),
-      url: formData.get("url"),
-      category: category || null,
-      sub_category: subCategory || null,
-      tags, // store array of tags
-      priority,
-      revisit_after_days: parseRevisit(revisit),
-      saved_on: new Date().toISOString(),
-      total_visits: 0,
-      status: "active",
-    };
-
-    const { data, error } = await supabase.from("bookmarks").insert(payload).select().single();
-
-    setLoading(false);
-
-    if (error) {
-      console.error("Error saving bookmark:", error);
-      alert("Failed to save bookmark");
-      return;
-    }
-
-    alert("Bookmark saved successfully!");
-    e.currentTarget.reset();
+  function resetForm() {
     setCategory("");
     setSubCategory("");
     setTags([]);
     setPriority(3);
     setRevisitEvery("1w");
+    setUrlPreview("");
+    setStatus("idle");
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!navigator.onLine) {
+      alert("You are offline. Please reconnect to save bookmarks.");
+      return;
+    }
+
+    setLoading(true);
+    setStatus("saving");
+
+    const form = e.target;
+
+    const revisitDays = parseRevisit(revisitEvery);
+    const nextVisitAt = new Date();
+    nextVisitAt.setDate(nextVisitAt.getDate() + revisitDays);
+
+    const formData = {
+      title: form.title.value,
+      url: form.url.value,
+      category,
+      sub_category: subCategory,
+      tags,
+      priority,
+      revisit_cycle_days: revisitDays,
+      next_visit_at: nextVisitAt.toISOString(),
+      total_visits: 0,
+    };
+
+    try {
+      const { error } = await supabase.from("bookmarks").insert([formData]);
+
+      if (error) {
+        console.error("Supabase insert failed:", error);
+        setStatus("error");
+        setLoading(false);
+        return;
+      }
+
+      // SUCCESS
+      setStatus("success");
+      setLoading(false);
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      setStatus("error");
+      setLoading(false);
+    }
+  };
+
+  function SuccessCheck() {
+    return (
+      <div className={styles.successWrap}>
+        <svg
+          viewBox='0 0 52 52'
+          className={styles.checkmark}
+        >
+          <circle
+            cx='26'
+            cy='26'
+            r='25'
+            fill='none'
+          />
+          <path
+            fill='none'
+            d='M14 27l7 7 16-16'
+          />
+        </svg>
+
+        <p className={styles.successText}>Bookmark Saved!</p>
+
+        <div className={styles.successActions}>
+          <button
+            className={styles.primaryBtn}
+            onClick={resetForm}
+          >
+            Add Another Bookmark
+          </button>
+
+          <button
+            className={styles.secondaryBtn}
+            onClick={onClose}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "success") {
+    return <SuccessCheck />;
   }
 
   return (
@@ -97,7 +157,8 @@ export default function AddBookmarkForm() {
         <BookmarkPlus size={24} /> Add Bookmark
       </h2>
 
-      {/* Title */}
+      {status === "error" && <div className={styles.errorBox}>Failed to save. Please try again.</div>}
+
       <div className={styles.row}>
         <label>Title</label>
         <input
@@ -107,7 +168,6 @@ export default function AddBookmarkForm() {
         />
       </div>
 
-      {/* URL */}
       <div className={styles.row}>
         <label>URL</label>
         <input
@@ -115,10 +175,18 @@ export default function AddBookmarkForm() {
           type='url'
           name='url'
           required
+          onChange={(e) => setUrlPreview(e.target.value)}
         />
+        {urlPreview && (
+          <div
+            className={styles.urlPreview}
+            title={urlPreview}
+          >
+            {truncateUrl(urlPreview)}
+          </div>
+        )}
       </div>
 
-      {/* Category */}
       <div className={styles.row}>
         <label>Category</label>
         <div className={styles.cardGroup}>
@@ -138,7 +206,6 @@ export default function AddBookmarkForm() {
         </div>
       </div>
 
-      {/* Sub-category */}
       <div className={styles.row}>
         <label>Sub-category</label>
         <div className={styles.cardGroup}>
@@ -159,7 +226,6 @@ export default function AddBookmarkForm() {
         </div>
       </div>
 
-      {/* Tags */}
       <div className={styles.row}>
         <label>Tags</label>
         <TagsInput
@@ -168,7 +234,6 @@ export default function AddBookmarkForm() {
         />
       </div>
 
-      {/* Priority */}
       <div className={styles.row}>
         <label>Rating</label>
         <StarRating
@@ -177,7 +242,6 @@ export default function AddBookmarkForm() {
         />
       </div>
 
-      {/* Revisit Cycle */}
       <div className={styles.row}>
         <label>Revisit Cycle</label>
         <div className={styles.radioGroup}>
@@ -185,6 +249,7 @@ export default function AddBookmarkForm() {
             { val: "1d", label: "Daily" },
             { val: "1w", label: "Weekly" },
             { val: "2w", label: "2 weeks" },
+            { val: "3w", label: "3 weeks" },
             { val: "1m", label: "1 month" },
             { val: "2m", label: "2 months" },
           ].map((r) => (
@@ -202,7 +267,6 @@ export default function AddBookmarkForm() {
         </div>
       </div>
 
-      {/* Submit */}
       <div className={styles.actions}>
         <button
           className={styles.addBtn}

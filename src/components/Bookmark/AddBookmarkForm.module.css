@@ -225,3 +225,125 @@ html[data-theme="dark"] {
   padding: 8px;
   font-size: 14px;
 }
+
+.urlPreview {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #6b7280;
+  /* muted gray */
+  line-height: 1.2;
+  word-break: break-all;
+}
+
+.successWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 280px;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.checkmark {
+  width: 90px;
+  height: 90px;
+  stroke: #22c55e;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.checkmark circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  animation: stroke 0.6s cubic-bezier(.65, .05, .36, 1) forwards;
+}
+
+.checkmark path {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: stroke 0.4s 0.6s cubic-bezier(.65, .05, .36, 1) forwards;
+}
+
+@keyframes stroke {
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.errorBox {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.successText {
+  margin-top: 12px;
+  font-weight: 600;
+}
+
+.successActions {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 12px;
+}
+
+.successWrap {
+  height: 500px;
+  margin-top: 100px;
+}
+
+.primaryBtn {
+  background: #203060;
+  color: white;
+  width: 400px;
+  padding: 10px 14px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  display: block;
+}
+
+.secondaryBtn {
+  background: #eee;
+  border: 1px solid #ccc;
+  width: 400px;
+  padding: 10px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.successActions {
+  margin-top: 140px;
+  display: flex;
+  gap: 12px;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeButtons 0.5s ease forwards;
+  animation-delay: 0.9s;
+  /* wait until check animation finishes */
+}
+
+@keyframes fadeButtons {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

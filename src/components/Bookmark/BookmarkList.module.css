@@ -121,3 +121,20 @@
 .addButton svg {
   stroke-width: 2.5;
 }
+
+.offlineBanner {
+  background-color: #fde68a;
+  /* soft yellow */
+  color: #b45309;
+  /* dark yellow/orange */
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.dueSoon {
+  color: #ff4d4f;
+  font-weight: 600;
+}

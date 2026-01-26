@@ -8,6 +8,9 @@ import { supabase } from "@/lib/supabase";
 import BookmarkModal from "./BookmarkModal";
 import AddBookmarkForm from "./AddBookmarkForm";
 
+import useOnlineStatus from "@/hooks/useOnlineStatus";
+import OfflineBanner from "@/components/common/OfflineBanner";
+
 import styles from "./BookmarkList.module.css";
 
 export default function BookmarkList({ initialBookmarks = [] }) {
@@ -16,12 +19,12 @@ export default function BookmarkList({ initialBookmarks = [] }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bookmarks, setBookmarks] = useState(initialBookmarks);
 
-  /* ---------- live "Last visit" refresh ---------- */
+  const isOnline = useOnlineStatus();
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(new Date());
     }, 60000);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -29,7 +32,6 @@ export default function BookmarkList({ initialBookmarks = [] }) {
 
   function formatLastVisit(value) {
     if (!value) return "—";
-
     const diffMs = currentTime - new Date(value);
     const minutes = Math.floor(diffMs / (1000 * 60));
     const hours = Math.floor(diffMs / (1000 * 60 * 60));
@@ -45,20 +47,14 @@ export default function BookmarkList({ initialBookmarks = [] }) {
     return `${years} year${years > 1 ? "s" : ""} ago`;
   }
 
-  function formatNextVisitIn(nextVisitAt) {
-    if (!nextVisitAt) return "—";
-
-    const now = new Date();
-    const target = new Date(nextVisitAt);
-
-    const diffMs = target - now;
-    if (diffMs <= 0) return "Due";
-
+  function formatNextVisit(value) {
+    if (!value) return "—";
+    const diffMs = new Date(value) - currentTime;
     const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
-    if (days < 30) return `${days}d`;
-
-    return `${Math.ceil(days / 30)}m`;
+    if (days <= 0) return "Due";
+    if (days === 1) return "Tomorrow";
+    return `${days} days`;
   }
 
   /* ---------- visit handler ---------- */
@@ -68,9 +64,8 @@ export default function BookmarkList({ initialBookmarks = [] }) {
     e.stopPropagation();
 
     const now = new Date();
-    const nextVisit = new Date(now.getTime() + bookmark.revisit_cycle_days * 24 * 60 * 60 * 1000);
+    const nextVisit = new Date(now.getTime() + bookmark.revisit_cycle_days * 86400000);
 
-    // 1️⃣ Optimistic UI update
     setBookmarks((prev) =>
       prev.map((b) =>
         b.id === bookmark.id
@@ -84,7 +79,8 @@ export default function BookmarkList({ initialBookmarks = [] }) {
       ),
     );
 
-    // 2️⃣ Background DB update
+    supabase.from("bookmark_visits").insert([{ bookmark_id: bookmark.id, visit_source: "bookmark-table", visited_at: now.toISOString() }]);
+
     supabase
       .from("bookmarks")
       .update({
@@ -92,12 +88,8 @@ export default function BookmarkList({ initialBookmarks = [] }) {
         total_visits: (bookmark.total_visits || 0) + 1,
         next_visit_at: nextVisit.toISOString(),
       })
-      .eq("id", bookmark.id)
-      .then(({ error }) => {
-        if (error) console.error("Supabase sync failed", error);
-      });
+      .eq("id", bookmark.id);
 
-    // 3️⃣ Navigate
     window.open(bookmark.url, "_blank", "noopener,noreferrer");
   }
 
@@ -111,7 +103,6 @@ export default function BookmarkList({ initialBookmarks = [] }) {
         cell: ({ row }) => {
           const bookmark = row.original;
           const domain = bookmark.url?.replace(/^https?:\/\//, "").replace(/\/$/, "");
-
           const faviconUrl = domain ? `https://www.google.com/s2/favicons?sz=64&domain_url=${domain}` : null;
 
           return (
@@ -129,7 +120,6 @@ export default function BookmarkList({ initialBookmarks = [] }) {
                   className={styles.favicon}
                 />
               )}
-
               <div className={styles.websiteText}>
                 <div className={styles.title}>{bookmark.title}</div>
                 <div className={styles.url}>{domain}</div>
@@ -139,19 +129,10 @@ export default function BookmarkList({ initialBookmarks = [] }) {
         },
       },
       {
-        id: "category_path",
-        header: "Category",
-        cell: ({ row }) => {
-          const { category, sub_category, sub_sub_category } = row.original;
-          return [category, sub_category, sub_sub_category].filter(Boolean).join(" / ");
-        },
-      },
-      {
         accessorKey: "priority",
         header: "Rating",
         cell: ({ getValue }) => {
           const rating = getValue() || 0;
-
           return (
             <div className={styles.stars}>
               {Array.from({ length: 5 }).map((_, i) => (
@@ -165,13 +146,8 @@ export default function BookmarkList({ initialBookmarks = [] }) {
             </div>
           );
         },
-        meta: { className: styles.numericCell },
       },
-      {
-        accessorKey: "total_visits",
-        header: "Visits",
-        meta: { className: styles.numericCell },
-      },
+      { accessorKey: "total_visits", header: "Visits" },
       {
         accessorKey: "last_visit",
         header: "Last Visit",
@@ -179,26 +155,14 @@ export default function BookmarkList({ initialBookmarks = [] }) {
       },
       {
         accessorKey: "next_visit_at",
-        header: "Revisit in",
-        cell: ({ getValue }) => {
-          const nextVisit = getValue();
-          if (!nextVisit) return "—";
+        header: "Next Visit",
+        cell: (info) => {
+          const val = info.getValue();
+          const diffMs = new Date(val) - currentTime;
+          const days = Math.ceil(diffMs / 86400000);
 
-          const today = new Date();
-          const target = new Date(nextVisit);
-
-          // Normalize both to start of day
-          today.setHours(0, 0, 0, 0);
-          target.setHours(0, 0, 0, 0);
-
-          const diffDays = Math.round((target - today) / (1000 * 60 * 60 * 24));
-
-          if (diffDays <= 0) return "Due";
-          if (diffDays < 30) return `${diffDays}d`;
-
-          return `${Math.ceil(diffDays / 30)}m`;
+          return <span className={days <= 0 ? styles.dueSoon : ""}>{formatNextVisit(val)}</span>;
         },
-        meta: { className: styles.numericCell },
       },
     ],
     [currentTime],
@@ -213,19 +177,17 @@ export default function BookmarkList({ initialBookmarks = [] }) {
     getSortedRowModel: getSortedRowModel(),
   });
 
-  /* ---------- render ---------- */
-
   return (
     <>
+      <OfflineBanner isOnline={isOnline} />
+
       <div className={styles.header}>
         <h1 className={styles.heading}>Bookmarks</h1>
-
         <button
           className={styles.addButton}
           onClick={() => setIsModalOpen(true)}
         >
-          <Plus size={16} />
-          Add Bookmark
+          <Plus size={16} /> Add Bookmark
         </button>
       </div>
 
@@ -237,47 +199,30 @@ export default function BookmarkList({ initialBookmarks = [] }) {
                 {hg.headers.map((header) => (
                   <th
                     key={header.id}
-                    onClick={header.column.getToggleSortingHandler()}
-                    className={`${styles.th} ${header.column.columnDef.meta?.className || ""}`}
+                    className={styles.th}
                   >
                     {flexRender(header.column.columnDef.header, header.getContext())}
-                    {{
-                      asc: " ▲",
-                      desc: " ▼",
-                    }[header.column.getIsSorted()] ?? null}
                   </th>
                 ))}
               </tr>
             ))}
           </thead>
-
           <tbody>
-            {table.getRowModel().rows.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={columns.length}
-                  className={styles.empty}
-                >
-                  No bookmarks found
-                </td>
+            {table.getRowModel().rows.map((row) => (
+              <tr
+                key={row.id}
+                className={styles.tr}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <td
+                    key={cell.id}
+                    className={styles.td}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
               </tr>
-            ) : (
-              table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className={styles.tr}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className={`${styles.td} ${cell.column.columnDef.meta?.className || ""}`}
-                    >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
       </div>
@@ -286,7 +231,7 @@ export default function BookmarkList({ initialBookmarks = [] }) {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       >
-        <AddBookmarkForm />
+        <AddBookmarkForm onClose={() => setIsModalOpen(false)} />
       </BookmarkModal>
     </>
   );
