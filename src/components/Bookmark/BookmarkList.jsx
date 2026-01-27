@@ -32,29 +32,54 @@ export default function BookmarkList({ initialBookmarks = [] }) {
 
   function formatLastVisit(value) {
     if (!value) return "—";
-    const diffMs = currentTime - new Date(value);
-    const minutes = Math.floor(diffMs / (1000 * 60));
-    const hours = Math.floor(diffMs / (1000 * 60 * 60));
-    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const months = Math.floor(days / 30);
-    const years = Math.floor(days / 365);
 
-    if (minutes < 1) return "Now";
-    if (minutes < 60) return `${minutes} min ago`;
-    if (hours < 24) return `${hours} hr${hours > 1 ? "s" : ""} ago`;
-    if (days < 30) return `${days} day${days > 1 ? "s" : ""} ago`;
-    if (months < 12) return `${months} month${months > 1 ? "s" : ""} ago`;
-    return `${years} year${years > 1 ? "s" : ""} ago`;
+    const diffMs = currentTime - new Date(value);
+    const totalMinutes = Math.floor(diffMs / (1000 * 60));
+
+    if (totalMinutes < 1) return "Now";
+
+    const days = Math.floor(totalMinutes / (60 * 24));
+
+    // Months
+    if (days >= 30) {
+      const months = Math.floor(days / 30);
+      return `${months}m ago`;
+    }
+
+    // Days
+    if (days >= 1) return `${days}d ago`;
+
+    // Hours
+    const hours = Math.floor(totalMinutes / 60);
+    if (hours >= 1) return `${hours}h ago`;
+
+    return `${totalMinutes}m ago`;
   }
 
   function formatNextVisit(value) {
     if (!value) return "—";
-    const diffMs = new Date(value) - currentTime;
-    const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
-    if (days <= 0) return "Due";
-    if (days === 1) return "Tomorrow";
-    return `${days} days`;
+    const diffMs = new Date(value) - currentTime;
+    const totalMinutes = Math.ceil(diffMs / (1000 * 60));
+
+    if (totalMinutes <= 0) return "Due";
+
+    const days = Math.floor(totalMinutes / (60 * 24));
+
+    // 🔥 Months (30d+)
+    if (days >= 30) {
+      const months = Math.floor(days / 30);
+      return `${months}m`;
+    }
+
+    // Days
+    if (days >= 1) return `${days}d`;
+
+    // Hours
+    const hours = Math.floor(totalMinutes / 60);
+    if (hours >= 1) return `${hours}h`;
+
+    return "<1h";
   }
 
   /* ---------- visit handler ---------- */
@@ -63,9 +88,14 @@ export default function BookmarkList({ initialBookmarks = [] }) {
     e.preventDefault();
     e.stopPropagation();
 
-    const now = new Date();
-    const nextVisit = new Date(now.getTime() + bookmark.revisit_cycle_days * 86400000);
+    const cycleDays = Number(bookmark.revisit_cycle_days) || 1;
 
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const nextVisit = new Date(startOfToday);
+    nextVisit.setDate(startOfToday.getDate() + cycleDays);
+
+    // Optimistic UI update
     setBookmarks((prev) =>
       prev.map((b) =>
         b.id === bookmark.id
@@ -79,17 +109,36 @@ export default function BookmarkList({ initialBookmarks = [] }) {
       ),
     );
 
-    supabase.from("bookmark_visits").insert([{ bookmark_id: bookmark.id, visit_source: "bookmark-table", visited_at: now.toISOString() }]);
+    try {
+      // 1️⃣ Insert visit log
+      const { error: visitError } = await supabase.from("bookmark_visits").insert([
+        {
+          bookmark_id: bookmark.id,
+          visit_source: "bookmark-table",
+          visited_at: now.toISOString(),
+        },
+      ]);
 
-    supabase
-      .from("bookmarks")
-      .update({
-        last_visit: now.toISOString(),
-        total_visits: (bookmark.total_visits || 0) + 1,
-        next_visit_at: nextVisit.toISOString(),
-      })
-      .eq("id", bookmark.id);
+      if (visitError) throw visitError;
 
+      // 2️⃣ Update bookmark
+      const { error: updateError } = await supabase
+        .from("bookmarks")
+        .update({
+          last_visit: now.toISOString(),
+          total_visits: (bookmark.total_visits || 0) + 1,
+          next_visit_at: nextVisit.toISOString(),
+        })
+        .eq("id", bookmark.id);
+
+      if (updateError) throw updateError;
+
+      console.log("✅ Supabase updated successfully");
+    } catch (err) {
+      console.error("❌ Supabase update failed:", err.message);
+    }
+
+    // Open AFTER db work starts
     window.open(bookmark.url, "_blank", "noopener,noreferrer");
   }
 
@@ -132,21 +181,28 @@ export default function BookmarkList({ initialBookmarks = [] }) {
         accessorKey: "priority",
         header: "Rating",
         cell: ({ getValue }) => {
-          const rating = getValue() || 0;
+          const rating = Number(getValue()) || 0;
+
+          if (rating === 0) return <span className={styles.noRating}>—</span>;
+
           return (
             <div className={styles.stars}>
-              {Array.from({ length: 5 }).map((_, i) => (
+              {Array.from({ length: rating }).map((_, i) => (
                 <Star
                   key={i}
                   size={22}
-                  className={i < rating ? styles.starFilled : styles.starEmpty}
-                  fill={i < rating ? "currentColor" : "none"}
+                  className={styles.starFilled}
+                  fill='currentColor'
                 />
               ))}
             </div>
           );
         },
+        meta: {
+          cellClassName: styles.ratingCell,
+        },
       },
+
       { accessorKey: "total_visits", header: "Visits" },
       {
         accessorKey: "last_visit",

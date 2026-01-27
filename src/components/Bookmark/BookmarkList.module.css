@@ -13,7 +13,7 @@
 .th,
 .td {
   padding: 8px 12px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--borderColor);
   text-align: left;
 }
 
@@ -23,11 +23,12 @@
 }
 
 .tr {
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--tableBorderColor);
+  transition: background ease-in .8s;
 }
 
 .tr:hover {
-  background: var(--hover-bg);
+  background: var(--tableHoverBg);
 }
 
 /* ---------- numeric cells ---------- */
@@ -137,4 +138,9 @@
 .dueSoon {
   color: #ff4d4f;
   font-weight: 600;
+}
+
+/* Rating column cell */
+.ratingCell {
+  text-align: left;
 }
