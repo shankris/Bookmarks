@@ -1,0 +1,15 @@
+/* Category / Sub-category */
+.categoryCell {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 2px;
+  align-items: center;
+}
+
+.categoryLink {
+  cursor: pointer;
+  color: var(--primary);
+  text-decoration: underline;
+  font-size: 13px;
+  white-space: nowrap;
+}

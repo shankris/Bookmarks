@@ -1,0 +1,67 @@
+.wrapper {
+  position: relative;
+  width: 460px;
+  display: flex;
+  align-items: center;
+  margin: 4px 0 10px 0;
+}
+
+/* input */
+
+.input {
+  width: 100%;
+  padding: 8px 70px 8px 36px;
+  /* extra right space for hint */
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input::placeholder {
+  color: var(--muted-foreground);
+}
+
+.input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-soft);
+}
+
+/* icons */
+
+.iconLeft {
+  position: absolute;
+  left: 10px;
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+
+.iconRight {
+  position: absolute;
+  right: 10px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.iconRight:hover {
+  color: var(--foreground);
+}
+
+/* shortcut badge */
+
+.shortcut {
+  position: absolute;
+  right: 10px;
+  font-size: 11px;
+  color: var(--muted-foreground);
+  background: var(--hover-bg);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}

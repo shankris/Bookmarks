@@ -1,0 +1,31 @@
+.categoryTagsCell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.categoryLink,
+.tagLink {
+  cursor: pointer;
+  color: var(--primary);
+  text-decoration: underline;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.categoryLink:hover,
+.tagLink:hover {
+  opacity: 0.8;
+}
+
+.separator {
+  margin: 0 2px;
+}
+
+.tagsCell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  /* space between tags */
+}

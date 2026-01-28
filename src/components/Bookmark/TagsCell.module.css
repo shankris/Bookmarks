@@ -1,0 +1,19 @@
+.separator {
+  margin: 0 2px;
+}
+
+/* Tags column */
+.tagsCell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  /* space between tags */
+}
+
+.tagLink {
+  cursor: pointer;
+  color: var(--primary);
+  text-decoration: underline;
+  font-size: 12px;
+  white-space: nowrap;
+}

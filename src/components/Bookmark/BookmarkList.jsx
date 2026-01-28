@@ -4,9 +4,12 @@ import { flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from "@
 import { useMemo, useState, useEffect } from "react";
 import { Plus, Star } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import TruncatedUrl from "@/components/common/TruncatedUrl";
+import TableSearch from "@/components/common/TableSearch";
 
 import BookmarkModal from "./BookmarkModal";
 import AddBookmarkForm from "./AddBookmarkForm";
+import BookmarkCategoryTags from "./BookmarkCategoryTags";
 
 import useOnlineStatus from "@/hooks/useOnlineStatus";
 import OfflineBanner from "@/components/common/OfflineBanner";
@@ -18,6 +21,7 @@ export default function BookmarkList({ initialBookmarks = [] }) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bookmarks, setBookmarks] = useState(initialBookmarks);
+  const [search, setSearch] = useState("");
 
   const isOnline = useOnlineStatus();
 
@@ -59,27 +63,25 @@ export default function BookmarkList({ initialBookmarks = [] }) {
   function formatNextVisit(value) {
     if (!value) return "—";
 
-    const diffMs = new Date(value) - currentTime;
-    const totalMinutes = Math.ceil(diffMs / (1000 * 60));
+    const today = new Date();
+    const currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-    if (totalMinutes <= 0) return "Due";
+    const visitDate = new Date(value);
+    const nextDate = new Date(visitDate.getFullYear(), visitDate.getMonth(), visitDate.getDate());
 
-    const days = Math.floor(totalMinutes / (60 * 24));
+    const diffDays = Math.round((nextDate - currentDate) / 86400000);
 
-    // 🔥 Months (30d+)
-    if (days >= 30) {
-      const months = Math.floor(days / 30);
+    if (diffDays < 0) return "Due";
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "Tomorrow";
+
+    // Months
+    if (diffDays >= 30) {
+      const months = Math.floor(diffDays / 30);
       return `${months}m`;
     }
 
-    // Days
-    if (days >= 1) return `${days}d`;
-
-    // Hours
-    const hours = Math.floor(totalMinutes / 60);
-    if (hours >= 1) return `${hours}h`;
-
-    return "<1h";
+    return `${diffDays}d`;
   }
 
   /* ---------- visit handler ---------- */
@@ -171,12 +173,69 @@ export default function BookmarkList({ initialBookmarks = [] }) {
               )}
               <div className={styles.websiteText}>
                 <div className={styles.title}>{bookmark.title}</div>
-                <div className={styles.url}>{domain}</div>
+                <div className={styles.url}>
+                  <TruncatedUrl url={bookmark.url} />
+                </div>
               </div>
             </a>
           );
         },
       },
+      // ---------- Category / Sub-category column ----------
+      {
+        accessorKey: "category",
+        header: "Category / Sub-category",
+        cell: ({ row }) => {
+          const bookmark = row.original;
+
+          return (
+            <div className={styles.categoryCell}>
+              {bookmark.category && (
+                <span
+                  className={styles.categoryLink}
+                  onClick={() => setSearch(bookmark.category)}
+                >
+                  {bookmark.category}
+                </span>
+              )}
+
+              {bookmark.category && bookmark.sub_category && <span className={styles.separator}> / </span>}
+
+              {bookmark.sub_category && (
+                <span
+                  className={styles.categoryLink}
+                  onClick={() => setSearch(bookmark.sub_category)}
+                >
+                  {bookmark.sub_category}
+                </span>
+              )}
+            </div>
+          );
+        },
+      },
+
+      // ---------- Tags column ----------
+      {
+        accessorKey: "tags",
+        header: "Tags",
+        cell: ({ getValue }) => {
+          const tags = getValue() || [];
+          return (
+            <div className={styles.tagsCell}>
+              {tags.map((tag, i) => (
+                <span
+                  key={i}
+                  className={styles.tagLink}
+                  onClick={() => setSearch(tag)}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          );
+        },
+      },
+
       {
         accessorKey: "priority",
         header: "Rating",
@@ -214,18 +273,42 @@ export default function BookmarkList({ initialBookmarks = [] }) {
         header: "Next Visit",
         cell: (info) => {
           const val = info.getValue();
-          const diffMs = new Date(val) - currentTime;
-          const days = Math.ceil(diffMs / 86400000);
+          if (!val) return "—";
 
-          return <span className={days <= 0 ? styles.dueSoon : ""}>{formatNextVisit(val)}</span>;
+          const today = new Date();
+          const currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+          const visitDate = new Date(val);
+          const nextDate = new Date(visitDate.getFullYear(), visitDate.getMonth(), visitDate.getDate());
+
+          const diffDays = Math.round((nextDate - currentDate) / 86400000);
+
+          let className = "";
+          if (diffDays < 0)
+            className = styles.overdue; // 🔥 RED
+          else if (diffDays === 0)
+            className = styles.today; // optional
+          else if (diffDays === 1) className = styles.tomorrow;
+
+          return <span className={className}>{formatNextVisit(val)}</span>;
         },
       },
     ],
     [currentTime],
   );
 
+  const filteredBookmarks = useMemo(() => {
+    if (!search.trim()) return initialBookmarks;
+
+    const term = search.toLowerCase();
+
+    return initialBookmarks.filter((b) => {
+      return b.title?.toLowerCase().includes(term) || b.url?.toLowerCase().includes(term) || b.category?.toLowerCase().includes(term) || b.sub_category?.toLowerCase().includes(term) || (b.tags || []).some((tag) => tag.toLowerCase().includes(term));
+    });
+  }, [search, initialBookmarks]);
+
   const table = useReactTable({
-    data: bookmarks,
+    data: filteredBookmarks,
     columns,
     state: { sorting },
     onSortingChange: setSorting,
@@ -239,6 +322,7 @@ export default function BookmarkList({ initialBookmarks = [] }) {
 
       <div className={styles.header}>
         <h1 className={styles.heading}>Bookmarks</h1>
+
         <button
           className={styles.addButton}
           onClick={() => setIsModalOpen(true)}
@@ -248,6 +332,12 @@ export default function BookmarkList({ initialBookmarks = [] }) {
       </div>
 
       <div className={styles.tableWrapper}>
+        <div className={styles.headerRight}>
+          <TableSearch
+            value={search}
+            onChange={setSearch}
+          />
+        </div>
         <table className={styles.table}>
           <thead>
             {table.getHeaderGroups().map((hg) => (
@@ -272,7 +362,7 @@ export default function BookmarkList({ initialBookmarks = [] }) {
                 {row.getVisibleCells().map((cell) => (
                   <td
                     key={cell.id}
-                    className={styles.td}
+                    className={`${styles.td} ${cell.column.columnDef.meta?.cellClassName || ""}`}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
