@@ -338,6 +338,7 @@ export default function BookmarkList({ initialBookmarks = [] }) {
             onChange={setSearch}
           />
         </div>
+
         <table className={styles.table}>
           <thead>
             {table.getHeaderGroups().map((hg) => (
