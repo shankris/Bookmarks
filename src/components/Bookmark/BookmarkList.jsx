@@ -364,6 +364,7 @@ export default function BookmarkList({ initialBookmarks = [] }) {
                   <td
                     key={cell.id}
                     className={`${styles.td} ${cell.column.columnDef.meta?.cellClassName || ""}`}
+                    data-label={flexRender(cell.column.columnDef.header, cell.getContext())} // ✅ use column header
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>

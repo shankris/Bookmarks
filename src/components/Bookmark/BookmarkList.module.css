@@ -246,3 +246,86 @@ html[data-theme="dark"] {
   gap: 12px;
   width: 100%;
 }
+
+/* Hide Category / Sub-category column below 768px */
+@media (max-width: 768px) {
+
+  th:nth-child(2),
+  td:nth-child(2),
+  th:nth-child(3),
+  td:nth-child(3) {
+    display: none;
+  }
+}
+
+
+@media (max-width: 425px) {
+  .table {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* Hide the table headers completely */
+  .table thead {
+    display: none;
+  }
+
+  /* Each row becomes a card */
+  .tr {
+    display: block;
+    border: 1px solid var(--tableBorderColor);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    background: var(--background);
+  }
+
+  /* First column spans full width */
+  .td:first-child {
+    display: block;
+    width: 100%;
+    padding-bottom: 8px;
+  }
+
+  .td:first-child .websiteCell {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .websiteText {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Other cells stack below the first column */
+  .td:not(:first-child) {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border: none;
+  }
+
+  /* Add the header label before each cell */
+  .td:not(:first-child)::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--muted-foreground);
+    margin-right: 6px;
+    flex-shrink: 0;
+    width: 120px;
+  }
+
+  /* Hide Category / Sub-category column completely if desired */
+  .td:nth-child(2),
+  .td:nth-child(3),
+  .td:nth-child(4) {
+    display: none;
+  }
+
+  /* Stars / Rating adjustments */
+  .stars {
+    gap: 2px;
+  }
+}
