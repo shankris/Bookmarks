@@ -109,15 +109,23 @@ html[data-theme="dark"] {
 /* ---------- stars ---------- */
 
 .stars {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(5, 20px);
+  gap: 2px;
+  justify-content: center;
 }
 
 .starFilled {
+  fill: #f5b301;
+  /* solid gold */
+  stroke: #f5b301;
+  /* match stroke so no hollow edge */
   color: #f5b301;
 }
 
 .starEmpty {
-  color: #ddd;
+  visibility: hidden;
+  /* keeps spacing */
 }
 
 /* ---------- header ---------- */

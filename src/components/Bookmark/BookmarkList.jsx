@@ -242,16 +242,17 @@ export default function BookmarkList({ initialBookmarks = [] }) {
         cell: ({ getValue }) => {
           const rating = Number(getValue()) || 0;
 
+          const MAX_STARS = 5;
+
           if (rating === 0) return <span className={styles.noRating}>—</span>;
 
           return (
             <div className={styles.stars}>
-              {Array.from({ length: rating }).map((_, i) => (
+              {Array.from({ length: MAX_STARS }).map((_, i) => (
                 <Star
                   key={i}
-                  size={22}
-                  className={styles.starFilled}
-                  fill='currentColor'
+                  size={20}
+                  className={i < rating ? styles.starFilled : styles.starEmpty}
                 />
               ))}
             </div>
