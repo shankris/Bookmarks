@@ -337,3 +337,29 @@ html[data-theme="dark"] {
     gap: 2px;
   }
 }
+
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.thContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* text left, icon right */
+  gap: 6px;
+  width: 100%;
+}
+
+.headerText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ⭐ Prevent icon from shrinking */
+.sortIcon {
+  flex-shrink: 0;
+}

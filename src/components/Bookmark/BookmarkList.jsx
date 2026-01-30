@@ -1,11 +1,19 @@
 "use client";
 
-import { flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
 import { useMemo, useState, useEffect } from "react";
-import { Plus, Star } from "lucide-react";
+import {
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  getPaginationRowModel, // ⭐ ADD THIS
+  useReactTable,
+} from "@tanstack/react-table";
+
+import { Plus, Star, ArrowUp, ArrowDown, Pencil } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import TruncatedUrl from "@/components/common/TruncatedUrl";
 import TableSearch from "@/components/common/TableSearch";
+import DataTablePagination from "@/components/common/DataTablePagination";
 
 import BookmarkModal from "./BookmarkModal";
 import AddBookmarkForm from "./AddBookmarkForm";
@@ -17,11 +25,21 @@ import OfflineBanner from "@/components/common/OfflineBanner";
 import styles from "./BookmarkList.module.css";
 
 export default function BookmarkList({ initialBookmarks = [] }) {
-  const [sorting, setSorting] = useState([]);
+  const [sorting, setSorting] = useState([
+    {
+      id: "next_visit_at",
+      desc: false, // false = ascending = oldest date first = most due first ✅
+    },
+  ]);
+
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bookmarks, setBookmarks] = useState(initialBookmarks);
   const [search, setSearch] = useState("");
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
   const isOnline = useOnlineStatus();
 
@@ -151,6 +169,7 @@ export default function BookmarkList({ initialBookmarks = [] }) {
       {
         accessorKey: "title",
         header: "Website",
+        enableSorting: true,
         cell: ({ row }) => {
           const bookmark = row.original;
           const domain = bookmark.url?.replace(/^https?:\/\//, "").replace(/\/$/, "");
@@ -185,6 +204,7 @@ export default function BookmarkList({ initialBookmarks = [] }) {
       {
         accessorKey: "category",
         header: "Category / Sub-category",
+        enableSorting: true,
         cell: ({ row }) => {
           const bookmark = row.original;
 
@@ -218,6 +238,7 @@ export default function BookmarkList({ initialBookmarks = [] }) {
       {
         accessorKey: "tags",
         header: "Tags",
+        enableSorting: false,
         cell: ({ getValue }) => {
           const tags = getValue() || [];
           return (
@@ -272,6 +293,13 @@ export default function BookmarkList({ initialBookmarks = [] }) {
       {
         accessorKey: "next_visit_at",
         header: "Next Visit",
+
+        sortingFn: (rowA, rowB) => {
+          const a = rowA.original.next_visit_at ? new Date(rowA.original.next_visit_at).getTime() : Infinity;
+          const b = rowB.original.next_visit_at ? new Date(rowB.original.next_visit_at).getTime() : Infinity;
+          return a - b;
+        },
+
         cell: (info) => {
           const val = info.getValue();
           if (!val) return "—";
@@ -285,10 +313,8 @@ export default function BookmarkList({ initialBookmarks = [] }) {
           const diffDays = Math.round((nextDate - currentDate) / 86400000);
 
           let className = "";
-          if (diffDays < 0)
-            className = styles.overdue; // 🔥 RED
-          else if (diffDays === 0)
-            className = styles.today; // optional
+          if (diffDays < 0) className = styles.overdue;
+          else if (diffDays === 0) className = styles.today;
           else if (diffDays === 1) className = styles.tomorrow;
 
           return <span className={className}>{formatNextVisit(val)}</span>;
@@ -299,22 +325,26 @@ export default function BookmarkList({ initialBookmarks = [] }) {
   );
 
   const filteredBookmarks = useMemo(() => {
-    if (!search.trim()) return initialBookmarks;
+    if (!search.trim()) return bookmarks; // ✅ use state, not initialBookmarks
 
     const term = search.toLowerCase();
 
-    return initialBookmarks.filter((b) => {
+    return bookmarks.filter((b) => {
       return b.title?.toLowerCase().includes(term) || b.url?.toLowerCase().includes(term) || b.category?.toLowerCase().includes(term) || b.sub_category?.toLowerCase().includes(term) || (b.tags || []).some((tag) => tag.toLowerCase().includes(term));
     });
-  }, [search, initialBookmarks]);
+  }, [search, bookmarks]); // ✅ dependency updated
 
   const table = useReactTable({
     data: filteredBookmarks,
     columns,
-    state: { sorting },
+
+    state: { sorting, pagination }, // ⭐ include pagination
     onSortingChange: setSorting,
+    onPaginationChange: setPagination, // ⭐ required
+
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(), // ⭐ THIS ACTIVATES PAGINATION
   });
 
   return (
@@ -344,17 +374,39 @@ export default function BookmarkList({ initialBookmarks = [] }) {
           <thead>
             {table.getHeaderGroups().map((hg) => (
               <tr key={hg.id}>
-                {hg.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className={styles.th}
-                  >
-                    {flexRender(header.column.columnDef.header, header.getContext())}
-                  </th>
-                ))}
+                {hg.headers.map((header) => {
+                  const canSort = header.column.getCanSort();
+                  const sortState = header.column.getIsSorted(); // false | 'asc' | 'desc'
+
+                  return (
+                    <th
+                      key={header.id}
+                      className={`${styles.th} ${canSort ? styles.sortable : ""}`}
+                      onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+                    >
+                      <div className={styles.thContent}>
+                        <span className={styles.headerText}>{flexRender(header.column.columnDef.header, header.getContext())}</span>
+
+                        {sortState === "asc" && (
+                          <ArrowUp
+                            size={16}
+                            className={styles.sortIcon}
+                          />
+                        )}
+                        {sortState === "desc" && (
+                          <ArrowDown
+                            size={16}
+                            className={styles.sortIcon}
+                          />
+                        )}
+                      </div>
+                    </th>
+                  );
+                })}
               </tr>
             ))}
           </thead>
+
           <tbody>
             {table.getRowModel().rows.map((row) => (
               <tr
@@ -375,6 +427,8 @@ export default function BookmarkList({ initialBookmarks = [] }) {
           </tbody>
         </table>
       </div>
+
+      <DataTablePagination table={table} />
 
       <BookmarkModal
         isOpen={isModalOpen}

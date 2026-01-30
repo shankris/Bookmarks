@@ -1,0 +1,53 @@
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding: 10px 0;
+  font-size: 14px;
+  color: var(--muted-foreground);
+  border-top: 1px solid var(--border);
+}
+
+.rowsPerPage {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rowsPerPage select {
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.pageInfo {
+  font-weight: 500;
+}
+
+.controls {
+  display: flex;
+  gap: 4px;
+}
+
+.controls button {
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.controls button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
