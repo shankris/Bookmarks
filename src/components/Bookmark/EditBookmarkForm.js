@@ -1,28 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { BookmarkPlus } from "lucide-react";
+import { SquarePen } from "lucide-react";
 import StarRating from "./StarRating";
 import TagsInput from "./TagsInput";
 import { supabase } from "@/lib/supabase";
 import styles from "./AddBookmarkForm.module.css";
 import { CATEGORY_MAP } from "@/components/common/categories";
 
-export default function AddBookmarkForm({ onClose }) {
-  const [priority, setPriority] = useState(3);
-  const [category, setCategory] = useState("");
-  const [subCategory, setSubCategory] = useState("");
-  const [tags, setTags] = useState([]);
+export default function EditBookmarkForm({ bookmark, onClose, onSave }) {
+  const [priority, setPriority] = useState(bookmark.priority || 3);
+  const [category, setCategory] = useState(bookmark.category || "");
+  const [subCategory, setSubCategory] = useState(bookmark.sub_category || "");
+  const [tags, setTags] = useState(bookmark.tags || []);
+  const [revisitEvery, setRevisitEvery] = useState(mapDaysToRevisit(bookmark.revisit_cycle_days));
   const [loading, setLoading] = useState(false);
-  const [revisitEvery, setRevisitEvery] = useState("1w");
-  const [urlPreview, setUrlPreview] = useState("");
-  const [status, setStatus] = useState("idle"); // idle | saving | success | error
-
-  function truncateUrl(url, maxLength = 43) {
-    if (!url) return "";
-    if (url.length <= maxLength) return url;
-    return url.slice(0, maxLength - 1) + "…";
-  }
+  const [status, setStatus] = useState("idle");
 
   function parseRevisit(revisit) {
     switch (revisit) {
@@ -47,34 +40,49 @@ export default function AddBookmarkForm({ onClose }) {
     }
   }
 
-  function resetForm() {
-    setCategory("");
-    setSubCategory("");
-    setTags([]);
-    setPriority(3);
-    setRevisitEvery("1w");
-    setUrlPreview("");
-    setStatus("idle");
+  function mapDaysToRevisit(days) {
+    switch (days) {
+      case 1:
+        return "1d";
+      case 7:
+        return "1w";
+      case 14:
+        return "2w";
+      case 21:
+        return "3w";
+      case 30:
+        return "1m";
+      case 60:
+        return "2m";
+      case 90:
+        return "3m";
+      default:
+        return "1w"; // fallback
+    }
   }
+
+  const handleDelete = async () => {
+    if (!confirm("Delete this bookmark?")) return;
+
+    const { error } = await supabase.from("bookmarks").delete().eq("id", bookmark.id);
+    if (error) return console.error(error);
+
+    onSave({ id: bookmark.id, deleted: true });
+    onClose();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!navigator.onLine) {
-      alert("You are offline. Please reconnect to save bookmarks.");
-      return;
-    }
-
     setLoading(true);
-    setStatus("saving");
 
     const form = e.target;
 
     const revisitDays = parseRevisit(revisitEvery);
+
     const nextVisitAt = new Date();
     nextVisitAt.setDate(nextVisitAt.getDate() + revisitDays);
 
-    const formData = {
+    const updatedData = {
       title: form.title.value,
       url: form.url.value,
       category,
@@ -83,72 +91,21 @@ export default function AddBookmarkForm({ onClose }) {
       priority,
       revisit_cycle_days: revisitDays,
       next_visit_at: nextVisitAt.toISOString(),
-      total_visits: 0,
     };
 
-    try {
-      const { error } = await supabase.from("bookmarks").insert([formData]);
+    const { data, error } = await supabase.from("bookmarks").update(updatedData).eq("id", bookmark.id).select().single();
 
-      if (error) {
-        console.error("Supabase insert failed:", error);
-        setStatus("error");
-        setLoading(false);
-        return;
-      }
+    setLoading(false);
 
-      // SUCCESS
-      setStatus("success");
-      setLoading(false);
-    } catch (err) {
-      console.error("Unexpected error:", err);
+    if (error) {
+      console.error(error);
       setStatus("error");
-      setLoading(false);
+      return;
     }
+
+    onSave(data); // ⭐ update table
+    onClose();
   };
-
-  function SuccessCheck() {
-    return (
-      <div className={styles.successWrap}>
-        <svg
-          viewBox='0 0 52 52'
-          className={styles.checkmark}
-        >
-          <circle
-            cx='26'
-            cy='26'
-            r='25'
-            fill='none'
-          />
-          <path
-            fill='none'
-            d='M14 27l7 7 16-16'
-          />
-        </svg>
-
-        <p className={styles.successText}>Bookmark Saved!</p>
-
-        <div className={styles.successActions}>
-          <button
-            className={styles.primaryBtn}
-            onClick={resetForm}
-          >
-            Add Another Bookmark
-          </button>
-
-          <button
-            className={styles.secondaryBtn}
-            onClick={onClose}
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (status === "success") {
-    return <SuccessCheck />;
-  }
 
   return (
     <form
@@ -156,16 +113,15 @@ export default function AddBookmarkForm({ onClose }) {
       onSubmit={handleSubmit}
     >
       <h2 className={styles.heading}>
-        <BookmarkPlus size={24} /> Add Bookmark
+        <SquarePen size={22} /> Edit Bookmark
       </h2>
-
-      {status === "error" && <div className={styles.errorBox}>Failed to save. Please try again.</div>}
 
       <div className={styles.row}>
         <label>Title</label>
         <input
-          className={styles.txtBox}
           name='title'
+          defaultValue={bookmark.title}
+          className={styles.txtBox}
           required
         />
       </div>
@@ -173,22 +129,14 @@ export default function AddBookmarkForm({ onClose }) {
       <div className={styles.row}>
         <label>URL</label>
         <input
-          className={styles.txtBox}
-          type='url'
           name='url'
+          defaultValue={bookmark.url}
+          className={styles.txtBox}
           required
-          onChange={(e) => setUrlPreview(e.target.value)}
         />
-        {urlPreview && (
-          <div
-            className={styles.urlPreview}
-            title={urlPreview}
-          >
-            {truncateUrl(urlPreview)}
-          </div>
-        )}
       </div>
 
+      {/* Category */}
       <div className={styles.row}>
         <label>Category</label>
         <div className={styles.cardGroup}>
@@ -208,6 +156,7 @@ export default function AddBookmarkForm({ onClose }) {
         </div>
       </div>
 
+      {/* Sub-category */}
       <div className={styles.row}>
         <label>Sub-category</label>
         <div className={styles.cardGroup}>
@@ -223,7 +172,7 @@ export default function AddBookmarkForm({ onClose }) {
               </button>
             ))
           ) : (
-            <div className={styles.placeholder}>Please select a category first</div>
+            <div className={styles.placeholder}>Select category first</div>
           )}
         </div>
       </div>
@@ -255,7 +204,7 @@ export default function AddBookmarkForm({ onClose }) {
             { val: "1m", label: "1 month" },
             { val: "2m", label: "2 months" },
             { val: "3m", label: "3 months" },
-            { val: "1y", label: "1 year" },
+            { val: "1y", label: "1 Year" },
           ].map((r) => (
             <label key={r.val}>
               <input
@@ -274,10 +223,25 @@ export default function AddBookmarkForm({ onClose }) {
       <div className={styles.actions}>
         <button
           className={styles.addBtn}
-          type='submit'
           disabled={loading}
         >
-          {loading ? "Saving..." : "Add Bookmark"}
+          {loading ? "Saving..." : "Save Changes"}
+        </button>
+
+        <button
+          type='button'
+          className={styles.secondaryBtn}
+          onClick={onClose}
+        >
+          Cancel
+        </button>
+
+        <button
+          type='button'
+          className={styles.deleteBtn}
+          onClick={handleDelete}
+        >
+          Delete
         </button>
       </div>
     </form>

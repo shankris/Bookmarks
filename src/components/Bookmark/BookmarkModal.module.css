@@ -128,3 +128,13 @@ html[data-theme="dark"] {
   border-radius: 4px;
   cursor: pointer;
 }
+
+.modalContent {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  max-height: 100vh;
+  border-radius: 0;
+  margin: 0;
+}

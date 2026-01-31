@@ -1,4 +1,9 @@
 :root {
+
+  /* ⭐ TYPOGRAPHY SCALE */
+  --font-table: 14px;
+  --font-table-secondary: 11px;
+
   /* Status colors — LIGHT MODE */
   --status-overdue: #dc2626;
   --status-today: #d97706;
@@ -38,23 +43,27 @@ html[data-theme="dark"] {
   border-collapse: collapse;
   width: 100%;
   min-width: 600px;
-  max-width: 1000px;
+  font-size: var(--font-table);
+  /* max-width: 1000px; */
 }
 
 .th,
 .td {
   padding: 8px 12px;
-  border: 1px solid var(--borderColor);
+  border: none;
+  /* ❌ remove all borders */
+  border-bottom: 1px solid var(--border);
+  /* ✅ only row divider */
   text-align: left;
 }
 
 .th {
-  background: var(--hover-bg);
+  background: var(--primary-soft);
+  font-weight: 600;
   cursor: pointer;
 }
 
 .tr {
-  border-bottom: 1px solid var(--tableBorderColor);
   transition: background ease-in .8s;
 }
 
@@ -67,7 +76,6 @@ html[data-theme="dark"] {
 .numericCell {
   text-align: center;
   white-space: nowrap;
-  font-size: 14px;
   letter-spacing: 1px;
   font-weight: 500;
   color: #444;
@@ -98,21 +106,20 @@ html[data-theme="dark"] {
 
 .title {
   font-weight: 500;
-  font-size: 14px;
 }
 
 .url {
-  font-size: 12px;
-  color: #6b7280;
+  font-size: var(--font-table-secondary);
+  color: var(--muted-foreground);
 }
 
 /* ---------- stars ---------- */
 
 .stars {
   display: grid;
-  grid-template-columns: repeat(5, 20px);
-  gap: 2px;
-  justify-content: center;
+  grid-template-columns: repeat(5, 16px);
+  /* gap: 2px; */
+  /* justify-content: center; */
 }
 
 .starFilled {
@@ -225,7 +232,6 @@ html[data-theme="dark"] {
   cursor: pointer;
   color: var(--primary);
   text-decoration: underline;
-  font-size: 13px;
 }
 
 .separator {
@@ -244,7 +250,7 @@ html[data-theme="dark"] {
   cursor: pointer;
   color: var(--primary);
   text-decoration: underline;
-  font-size: 12px;
+  font-size: var(--font-table-secondary);
 }
 
 /* Header layout adjustment */
@@ -257,6 +263,10 @@ html[data-theme="dark"] {
 
 /* Hide Category / Sub-category column below 768px */
 @media (max-width: 768px) {
+
+  .table {
+    font-size: 12px;
+  }
 
   th:nth-child(2),
   td:nth-child(2),
@@ -362,4 +372,21 @@ html[data-theme="dark"] {
 /* ⭐ Prevent icon from shrinking */
 .sortIcon {
   flex-shrink: 0;
+}
+
+.editBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  min-width: 36px;
+  /* keeps button tappable */
+}
+
+/* THE IMPORTANT PART */
+.editIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  /* 🔥 stops squishing */
 }

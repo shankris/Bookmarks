@@ -22,6 +22,9 @@
   --input-border: #d0d0d0;
   --text: #333;
   --primary: #2563eb;
+
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
 }
 
 /* ---------- DARK MODE VARIABLES ---------- */
@@ -48,13 +51,16 @@ html[data-theme="dark"] {
   --input-border: #444;
   --text: #ddd;
   --primary: #3b82f6;
+
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
 }
 
 /* ---------- GENERAL FORM STYLES ---------- */
 .row label {
   display: block;
   font-weight: 500;
-  margin-bottom: 6px;
+  margin: 8px 0 0;
 }
 
 .heading {
@@ -142,7 +148,7 @@ html[data-theme="dark"] {
 .radioGroup {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 4px;
   max-width: 500px;
 }
 
@@ -153,17 +159,17 @@ html[data-theme="dark"] {
 }
 
 .radioGroup label {
-  flex: 0 0 calc(33.333% - 6px);
+  flex: 0 0 calc(25% - 6px);
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   white-space: nowrap;
-  height: 36px;
+  height: 28px;
   padding: 0 8px;
 
   border-radius: 3px;
-  font-size: 14px;
+  font-size: 12px;
   cursor: pointer;
   user-select: none;
 
@@ -189,20 +195,20 @@ html[data-theme="dark"] {
 .cardGroup {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 6px;
   margin-top: 6px;
 }
 
 .card {
-  padding: 6px 14px;
+  padding: 6px 8px;
   border: 1px solid var(--radio-border);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--radio-bg);
   color: var(--radio-text);
   cursor: pointer;
   transition: all 0.15s ease;
-  font-size: 14px;
-  min-width: 60px;
+  font-size: 12px;
+  min-width: 50px;
   text-align: center;
 }
 
@@ -346,4 +352,65 @@ html[data-theme="dark"] {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+
+/* ---------- Edit Bookmarks ---------- */
+
+.editCell {
+  text-align: center;
+  width: 50px;
+}
+
+.editBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editBtn:hover {
+  color: var(--accent);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 500px;
+}
+
+/* Save button stays full width */
+.addBtn {
+  flex: 1 1 100%;
+}
+
+/* Cancel + Delete share row */
+.secondaryBtn,
+.deleteBtn {
+  flex: 1 1 calc(50% - 5px);
+  padding: 10px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Cancel */
+.secondaryBtn {
+  background: var(--radio-bg);
+  color: var(--text);
+  border: 1px solid var(--radio-border);
+}
+
+/* Delete */
+.deleteBtn {
+  background: var(--danger);
+  color: white;
+}
+
+.deleteBtn:hover {
+  background: var(--danger-hover);
 }

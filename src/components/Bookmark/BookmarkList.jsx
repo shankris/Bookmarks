@@ -9,7 +9,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import { Plus, Star, ArrowUp, ArrowDown, Pencil } from "lucide-react";
+import { Plus, Star, ChevronUp, ChevronDown, SquarePen } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import TruncatedUrl from "@/components/common/TruncatedUrl";
 import TableSearch from "@/components/common/TableSearch";
@@ -18,6 +18,7 @@ import DataTablePagination from "@/components/common/DataTablePagination";
 import BookmarkModal from "./BookmarkModal";
 import AddBookmarkForm from "./AddBookmarkForm";
 import BookmarkCategoryTags from "./BookmarkCategoryTags";
+import EditBookmarkForm from "./EditBookmarkForm";
 
 import useOnlineStatus from "@/hooks/useOnlineStatus";
 import OfflineBanner from "@/components/common/OfflineBanner";
@@ -32,6 +33,7 @@ export default function BookmarkList({ initialBookmarks = [] }) {
     },
   ]);
 
+  const [editingBookmark, setEditingBookmark] = useState(null); // ⭐ holds row being edited
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bookmarks, setBookmarks] = useState(initialBookmarks);
@@ -203,7 +205,7 @@ export default function BookmarkList({ initialBookmarks = [] }) {
       // ---------- Category / Sub-category column ----------
       {
         accessorKey: "category",
-        header: "Category / Sub-category",
+        header: "Category",
         enableSorting: true,
         cell: ({ row }) => {
           const bookmark = row.original;
@@ -272,7 +274,7 @@ export default function BookmarkList({ initialBookmarks = [] }) {
               {Array.from({ length: MAX_STARS }).map((_, i) => (
                 <Star
                   key={i}
-                  size={20}
+                  size={16}
                   className={i < rating ? styles.starFilled : styles.starEmpty}
                 />
               ))}
@@ -318,6 +320,33 @@ export default function BookmarkList({ initialBookmarks = [] }) {
           else if (diffDays === 1) className = styles.tomorrow;
 
           return <span className={className}>{formatNextVisit(val)}</span>;
+        },
+      },
+      {
+        id: "edit",
+        header: "", // no header label
+        enableSorting: false,
+        cell: ({ row }) => {
+          const bookmark = row.original;
+
+          return (
+            <button
+              className={styles.editBtn}
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingBookmark(bookmark); // ⭐ opens panel
+              }}
+              title='Edit Bookmark'
+            >
+              <SquarePen
+                size={16}
+                className={styles.editIcon}
+              />
+            </button>
+          );
+        },
+        meta: {
+          cellClassName: styles.editCell,
         },
       },
     ],
@@ -388,13 +417,13 @@ export default function BookmarkList({ initialBookmarks = [] }) {
                         <span className={styles.headerText}>{flexRender(header.column.columnDef.header, header.getContext())}</span>
 
                         {sortState === "asc" && (
-                          <ArrowUp
+                          <ChevronUp
                             size={16}
                             className={styles.sortIcon}
                           />
                         )}
                         {sortState === "desc" && (
-                          <ArrowDown
+                          <ChevronDown
                             size={16}
                             className={styles.sortIcon}
                           />
@@ -435,6 +464,22 @@ export default function BookmarkList({ initialBookmarks = [] }) {
         onClose={() => setIsModalOpen(false)}
       >
         <AddBookmarkForm onClose={() => setIsModalOpen(false)} />
+      </BookmarkModal>
+
+      <BookmarkModal
+        isOpen={!!editingBookmark}
+        onClose={() => setEditingBookmark(null)}
+      >
+        {editingBookmark && (
+          <EditBookmarkForm
+            bookmark={editingBookmark}
+            onClose={() => setEditingBookmark(null)}
+            onSave={(updated) => {
+              // update table instantly
+              setBookmarks((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
+            }}
+          />
+        )}
       </BookmarkModal>
     </>
   );
