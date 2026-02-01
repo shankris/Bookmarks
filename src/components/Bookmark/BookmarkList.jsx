@@ -14,6 +14,7 @@ import { supabase } from "@/lib/supabase";
 import TruncatedUrl from "@/components/common/TruncatedUrl";
 import TableSearch from "@/components/common/TableSearch";
 import DataTablePagination from "@/components/common/DataTablePagination";
+import BookmarkExport from "@/components/Bookmark/BookmarkExport";
 
 import BookmarkModal from "./BookmarkModal";
 import AddBookmarkForm from "./AddBookmarkForm";
@@ -32,6 +33,8 @@ export default function BookmarkList({ initialBookmarks = [] }) {
       desc: false, // false = ascending = oldest date first = most due first ✅
     },
   ]);
+
+  const [viewMode, setViewMode] = useState("table"); // "table" or "card"
 
   const [editingBookmark, setEditingBookmark] = useState(null); // ⭐ holds row being edited
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -383,79 +386,135 @@ export default function BookmarkList({ initialBookmarks = [] }) {
       <div className={styles.header}>
         <h1 className={styles.heading}>Bookmarks</h1>
 
-        <button
-          className={styles.addButton}
-          onClick={() => setIsModalOpen(true)}
-        >
-          <Plus size={16} /> Add Bookmark
-        </button>
-      </div>
+        <div className={styles.headerActions}>
+          <BookmarkExport data={filteredBookmarks} />
 
-      <div className={styles.tableWrapper}>
-        <div className={styles.headerRight}>
-          <TableSearch
-            value={search}
-            onChange={setSearch}
-          />
+          <button
+            className={styles.toggleViewBtn}
+            onClick={() => setViewMode(viewMode === "table" ? "card" : "table")}
+          >
+            {viewMode === "table" ? "Switch to Card View" : "Switch to Table View"}
+          </button>
+
+          <button
+            className={styles.addButton}
+            onClick={() => setIsModalOpen(true)}
+          >
+            <Plus size={16} /> Add Bookmark
+          </button>
         </div>
-
-        <table className={styles.table}>
-          <thead>
-            {table.getHeaderGroups().map((hg) => (
-              <tr key={hg.id}>
-                {hg.headers.map((header) => {
-                  const canSort = header.column.getCanSort();
-                  const sortState = header.column.getIsSorted(); // false | 'asc' | 'desc'
-
-                  return (
-                    <th
-                      key={header.id}
-                      className={`${styles.th} ${canSort ? styles.sortable : ""}`}
-                      onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
-                    >
-                      <div className={styles.thContent}>
-                        <span className={styles.headerText}>{flexRender(header.column.columnDef.header, header.getContext())}</span>
-
-                        {sortState === "asc" && (
-                          <ChevronUp
-                            size={16}
-                            className={styles.sortIcon}
-                          />
-                        )}
-                        {sortState === "desc" && (
-                          <ChevronDown
-                            size={16}
-                            className={styles.sortIcon}
-                          />
-                        )}
-                      </div>
-                    </th>
-                  );
-                })}
-              </tr>
-            ))}
-          </thead>
-
-          <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className={styles.tr}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td
-                    key={cell.id}
-                    className={`${styles.td} ${cell.column.columnDef.meta?.cellClassName || ""}`}
-                    data-label={flexRender(cell.column.columnDef.header, cell.getContext())} // ✅ use column header
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
+
+      {viewMode === "table" ? (
+        <>
+          <div className={styles.tableWrapper}>
+            <div className={styles.headerRight}>
+              <TableSearch
+                value={search}
+                onChange={setSearch}
+              />
+            </div>
+
+            <table className={styles.table}>
+              <thead>
+                {table.getHeaderGroups().map((hg) => (
+                  <tr key={hg.id}>
+                    {hg.headers.map((header) => {
+                      const canSort = header.column.getCanSort();
+                      const sortState = header.column.getIsSorted();
+                      return (
+                        <th
+                          key={header.id}
+                          className={`${styles.th} ${canSort ? styles.sortable : ""}`}
+                          onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+                        >
+                          <div className={styles.thContent}>
+                            <span className={styles.headerText}>{flexRender(header.column.columnDef.header, header.getContext())}</span>
+
+                            {sortState === "asc" && (
+                              <ChevronUp
+                                size={16}
+                                className={styles.sortIcon}
+                              />
+                            )}
+                            {sortState === "desc" && (
+                              <ChevronDown
+                                size={16}
+                                className={styles.sortIcon}
+                              />
+                            )}
+                          </div>
+                        </th>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </thead>
+
+              <tbody>
+                {table.getRowModel().rows.map((row) => (
+                  <tr
+                    key={row.id}
+                    className={styles.tr}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <td
+                        key={cell.id}
+                        className={`${styles.td} ${cell.column.columnDef.meta?.cellClassName || ""}`}
+                        data-label={flexRender(cell.column.columnDef.header, cell.getContext())}
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <DataTablePagination table={table} />
+        </>
+      ) : (
+        <div className={styles.cardGrid}>
+          {filteredBookmarks.map((bookmark) => {
+            const domain = bookmark.url?.replace(/^https?:\/\//, "").replace(/\/$/, "");
+            const hash = bookmark.id.slice(0, 3);
+            const screenshotFile = `/screenshots/${domain}-${hash}.png`;
+
+            return (
+              <div
+                key={bookmark.id}
+                className={styles.card}
+              >
+                <a
+                  href={bookmark.url}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  onClick={(e) => handleVisit(bookmark, e)}
+                >
+                  <img
+                    src={screenshotFile}
+                    alt={bookmark.title}
+                    className={styles.screenshot}
+                    onError={(e) => (e.currentTarget.src = "/placeholder.png")}
+                  />
+                </a>
+                <div className={styles.cardInfo}>
+                  <a
+                    href={bookmark.url}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className={styles.cardTitle}
+                  >
+                    {bookmark.title}
+                  </a>
+                  <div className={styles.cardUrl}>{bookmark.url}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <DataTablePagination table={table} />
 

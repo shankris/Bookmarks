@@ -390,3 +390,13 @@ html[data-theme="dark"] {
   flex-shrink: 0;
   /* 🔥 stops squishing */
 }
+
+.toggleViewBtn {
+  margin-right: 8px;
+  background: var(--cardBg);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}

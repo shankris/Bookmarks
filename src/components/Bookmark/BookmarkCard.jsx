@@ -1,34 +1,42 @@
-"use client";
-
+// src/components/bookmarks/BookmarkCard.jsx
+import React from "react";
 import styles from "./BookmarkCard.module.css";
 
-export default function BookmarkCard({ bookmark, onEdit, onDelete }) {
+export default function BookmarkCard({ bookmark }) {
+  const domain = bookmark.url?.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const hash = bookmark.id?.slice(0, 3); // or match your screenshot hash
+  const screenshotFile = `/screenshots/${domain}-${hash}.png`;
+
   return (
     <div className={styles.card}>
-      <div className={styles.header}>
-        <h3 className={styles.title}>{bookmark.title}</h3>
-        <div className={styles.actions}>
-          <button onClick={() => onEdit(bookmark)}>Edit</button>
-          <button onClick={() => onDelete(bookmark.id)}>Delete</button>
+      <img
+        src={screenshotFile}
+        alt={bookmark.title}
+        className={styles.screenshot}
+        onError={(e) => {
+          e.currentTarget.src = "/placeholder.png";
+        }}
+      />
+      <div className={styles.info}>
+        <a
+          href={bookmark.url}
+          target='_blank'
+          rel='noopener noreferrer'
+          className={styles.title}
+        >
+          {bookmark.title}
+        </a>
+        <div className={styles.url}>{bookmark.url}</div>
+        <div className={styles.tags}>
+          {(bookmark.tags || []).map((tag) => (
+            <span
+              key={tag}
+              className={styles.tag}
+            >
+              {tag}
+            </span>
+          ))}
         </div>
-      </div>
-
-      <a
-        href={bookmark.url}
-        target='_blank'
-        rel='noopener noreferrer'
-        className={styles.url}
-      >
-        {bookmark.url}
-      </a>
-
-      {bookmark.notes && <p className={styles.notes}>{bookmark.notes}</p>}
-
-      <div className={styles.meta}>
-        {bookmark.category && <span>{bookmark.category}</span>}
-        {bookmark.sub_category && <span>{bookmark.sub_category}</span>}
-        {bookmark.sub_sub_category && <span>{bookmark.sub_sub_category}</span>}
-        {bookmark.is_pinned && <span>📌 Pinned</span>}
       </div>
     </div>
   );

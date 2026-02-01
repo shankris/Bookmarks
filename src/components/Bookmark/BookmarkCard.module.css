@@ -1,88 +1,43 @@
-/* Light mode variables */
-:root {
-  --bg: #fff;
-  --text: #111;
-  --text-secondary: #555;
-  --border: #ddd;
-  --hover-bg: #f9f9f9;
-  --hover-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --link: #0070f3;
-  --meta: #888;
-}
-
-/* Dark mode variables */
-html[data-theme="dark"] {
-  --bg: #1e1e1e;
-  --text: #fff;
-  --text-secondary: #ccc;
-  --border: #333;
-  --hover-bg: #2a2a2a;
-  --hover-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-  --link: #4ea1ff;
-  --meta: #aaa;
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 16px 0;
 }
 
 .card {
-  background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
-  transition: all 0.2s ease;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--cardBg);
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
 .card:hover {
-  background: var(--hover-bg);
-  box-shadow: var(--hover-shadow);
+  transform: translateY(-4px);
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
+.screenshot {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
 }
 
-.title {
-  font-size: 1.1rem;
+.cardInfo {
+  padding: 12px;
+}
+
+.cardTitle {
   font-weight: 600;
   color: var(--text);
-}
-
-.actions button {
-  margin-left: 8px;
-  padding: 4px 10px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--hover-bg);
-  cursor: pointer;
-  color: var(--text);
-}
-
-.actions button:hover {
-  background: var(--hover-bg);
-}
-
-.url {
-  display: block;
-  color: var(--link);
-  font-size: 0.9rem;
-  margin-bottom: 8px;
   text-decoration: none;
 }
 
-.url:hover {
-  text-decoration: underline;
-}
-
-.notes {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  margin-bottom: 8px;
-}
-
-.meta span {
-  font-size: 0.8rem;
-  color: var(--meta);
-  margin-right: 8px;
+.cardUrl {
+  font-size: 12px;
+  color: var(--mutedText);
+  word-break: break-all;
 }
