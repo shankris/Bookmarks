@@ -56,7 +56,7 @@ export default function TableSearch({ value, onChange }) {
       <input
         ref={inputRef}
         type='text'
-        placeholder='Search table ...'
+        placeholder='Search bookmarks ...'
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setFocused(true)}

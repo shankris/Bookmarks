@@ -31,7 +31,7 @@ export default function RootLayout({ children }) {
         <Header />
 
         <div className='app-shell'>
-          <Sidebar />
+          {/* <Sidebar /> */}
           <main className='app-main'>{children}</main>
           <Footer />
         </div>

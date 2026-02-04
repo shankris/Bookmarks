@@ -141,9 +141,10 @@ html[data-theme="dark"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 1px solid #e5e7eb;
-  margin-bottom: 12px;
+  padding: 4px 0 2px;
+  /* border-bottom: 1px solid #e5e7eb; */
+  margin-bottom: 0px;
+  flex-wrap: wrap;
 }
 
 .heading {
@@ -160,10 +161,13 @@ html[data-theme="dark"] {
   font-size: 14px;
   border-radius: 6px;
   cursor: pointer;
+  color: var(--accent-color);
 }
 
+
+
 .addButton svg {
-  stroke-width: 2.5;
+  /* stroke-width: 2.5; */
 }
 
 .offlineBanner {
@@ -399,4 +403,24 @@ html[data-theme="dark"] {
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
+}
+
+
+.leftControls {
+  flex: 1;
+  min-width: 220px;
+}
+
+.rightControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Hide text on small screens */
+@media (max-width: 768px) {
+  .addText {
+    display: none;
+  }
 }

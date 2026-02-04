@@ -144,13 +144,21 @@ async function main() {
 
         if (mode === "fill" && fs.existsSync(filePath)) {
           console.log(`⏭ Skipping existing screenshot: ${filename}`);
+          // still ensure DB has filename
+          await supabase.from("bookmarks").update({ screenshot_file: filename }).eq("id", bm.id);
           continue;
         }
 
+        let success = false;
         if (bm.url.includes("youtube.com/watch")) {
-          await saveYouTubeThumbnail(bm.url, filePath);
+          success = await saveYouTubeThumbnail(bm.url, filePath);
         } else {
-          await takeScreenshot(bm.url, filePath);
+          success = await takeScreenshot(bm.url, filePath);
+        }
+
+        if (success) {
+          // ✅ Save filename to Supabase
+          await supabase.from("bookmarks").update({ screenshot_file: filename }).eq("id", bm.id);
         }
       }
     }

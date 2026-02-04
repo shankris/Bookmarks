@@ -16,8 +16,14 @@
   transition: transform 0.2s ease;
 }
 
+.cardTitle {
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 400;
+}
+
 .card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-1px);
 }
 
 .screenshot {
@@ -41,3 +47,19 @@
   color: var(--mutedText);
   word-break: break-all;
 }
+
+.content {
+  padding: 12px;
+}
+
+.titleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+/* .favicon {
+  width: 22px;
+  height: 22px;
+} */
