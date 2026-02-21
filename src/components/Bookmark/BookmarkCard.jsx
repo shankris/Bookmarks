@@ -1,8 +1,8 @@
-// src/components/bookmarks/BookmarkCard.jsx
 import React from "react";
 import styles from "./BookmarkCard.module.css";
+import { Pencil, Eye } from "lucide-react";
 
-export default function BookmarkCard({ bookmark, onVisit }) {
+export default function BookmarkCard({ bookmark, onVisit, onEdit, onView }) {
   const handleVisit = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -10,17 +10,19 @@ export default function BookmarkCard({ bookmark, onVisit }) {
     window.open(bookmark.url, "_blank", "noopener,noreferrer");
   };
 
+  const stop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   const screenshotSrc = bookmark.screenshot_file ? `/screenshots/${bookmark.screenshot_file}` : "/screenshots/placeholder.png";
 
-  // ✅ Safe domain extraction
   let domain = "";
   try {
     if (bookmark.url) {
       domain = new URL(bookmark.url).hostname.replace(/^www\./, "");
     }
-  } catch {
-    domain = "";
-  }
+  } catch {}
 
   return (
     <div
@@ -30,6 +32,32 @@ export default function BookmarkCard({ bookmark, onVisit }) {
       tabIndex={0}
       onKeyDown={(e) => e.key === "Enter" && handleVisit(e)}
     >
+      {/* 🔹 Top Right Actions */}
+      <div className={styles.actions}>
+        <button
+          className={styles.iconBtn}
+          onClick={(e) => {
+            stop(e);
+            onEdit?.(bookmark);
+          }}
+          aria-label='Edit bookmark'
+        >
+          <Pencil size={16} />
+        </button>
+
+        <button
+          className={styles.iconBtn}
+          onClick={(e) => {
+            stop(e);
+            onView?.(bookmark);
+          }}
+          aria-label='View details'
+        >
+          <Eye size={16} />
+        </button>
+      </div>
+
+      {/* 🔹 Image (no link behavior now) */}
       <img
         src={screenshotSrc}
         alt={bookmark.title}
@@ -50,8 +78,6 @@ export default function BookmarkCard({ bookmark, onVisit }) {
               height={18}
             />
           )}
-
-          {/* ❌ No link here anymore */}
           <span className={styles.cardTitle}>{bookmark.title}</span>
         </div>
       </div>

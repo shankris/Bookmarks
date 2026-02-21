@@ -3,8 +3,8 @@ import BookmarkCard from "./BookmarkCard";
 import DataTablePagination from "@/components/common/DataTablePagination";
 import styles from "./BookmarkGrid.module.css";
 
-export default function BookmarkGrid({ table, onVisit }) {
-  const rows = table.getRowModel().rows; // 🔥 THIS includes pagination
+export default function BookmarkGrid({ table, onVisit, onEdit, onView }) {
+  const rows = table.getRowModel().rows; // includes pagination
 
   if (!rows.length) return <p>No bookmarks found!</p>;
 
@@ -16,11 +16,12 @@ export default function BookmarkGrid({ table, onVisit }) {
             key={row.id}
             bookmark={row.original}
             onVisit={onVisit}
+            onEdit={onEdit}
+            onView={onView}
           />
         ))}
       </div>
 
-      {/* Same pagination as table view */}
       <DataTablePagination table={table} />
     </>
   );

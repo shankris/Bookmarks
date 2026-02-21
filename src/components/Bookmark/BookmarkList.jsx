@@ -64,10 +64,11 @@ export default function BookmarkList({ initialBookmarks = [] }) {
 
   // Change page size based on view
   useEffect(() => {
-    setPagination({
+    setPagination((prev) => ({
+      ...prev,
       pageIndex: 0,
-      pageSize: viewMode === "table" ? 10 : 20,
-    });
+      pageSize: viewMode === "table" ? 10 : 15,
+    }));
   }, [viewMode]);
 
   const columns = BookmarkColumns({
@@ -164,6 +165,7 @@ export default function BookmarkList({ initialBookmarks = [] }) {
                 e.stopPropagation();
                 handleBookmarkVisit({ bookmark, setBookmarks });
               }}
+              onEdit={setEditingBookmark} // ⭐ THIS connects card → edit modal
             />
           </motion.div>
         )}

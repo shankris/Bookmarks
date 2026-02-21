@@ -1,10 +1,10 @@
 Usage
 
 Full update (overwrite all screenshots):
-npm run screenshots
+node run screenshots
 
 Add missing only:
-npm run screenshots -- --fill
+node scripts/getScrshot.js --fill
 
 
 
